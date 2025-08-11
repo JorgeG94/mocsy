@@ -223,20 +223,16 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 
   REAL(kind=r8) :: dtempot, dtempot68
 
-  REAL(kind=r8) :: pK1o, ma1, mb1, mc1, pK1
-  REAL(kind=r8) :: pK2o, ma2, mb2, mc2, pK2
 
   !REAL(kind=r8), DIMENSION(12) :: a0, a1, a2, b0, b1, b2
-  REAL(kind=r8), DIMENSION(12) :: deltav, deltak, lnkpok0
-  REAL(kind=r8) :: tmp, nK0we74
+  REAL(kind=r8), DIMENSION(12) :: lnkpok0
 
-  INTEGER :: i, icount, ipc
+  INTEGER :: i, icount
 
   REAL(kind=r8) :: t, tk, tk0, prb
   REAL(kind=r8) :: s, sqrts, s15, scl
 
-  REAL(kind=r8) :: Phydro_atm, Patmd, Ptot, Rgas_atm, vbarCO2
-
+  REAL(kind=r8) :: Patmd, Ptot
 ! Arrays to pass optional arguments into or use defaults (Dickson et al., 2007)
   CHARACTER(3) :: opB
   CHARACTER(2) :: opKf
@@ -383,8 +379,11 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       CO2(g) <-> CO2(aq.)
 !       K0  = [CO2]/ fCO2
 !       Weiss (1974)   [mol/kg/atm]
+        Ptot = calculate_ptot(opgas, patmd, prb)
 
-        K0(i) = calculate_k0(opGAS, tk, dtempot, patmd, prb, s)
+        tk0 = calculate_tk0(opgas, tk, dlogtk)
+
+        K0(i) = calculate_k0(tk, s)
 
 !       K1 = [H][HCO3]/[H2CO3]
 !       K2 = [H][CO3]/[HCO3]
@@ -465,7 +464,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
         call calculate_all_pressure_correction_factors(t, prb, tk, lnkpok0)
 
 !       Pressure effect on K0 based on Weiss (1974, equation 5)
-        K0(i) = K0(i) * exp( ((1-Ptot)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   ! Weiss (1974, equation 5)
+        K0(i) = K0(i) * exp( ((1-Ptot)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   
 
 !       Pressure correction on Ks (Free scale)
         Ks(i) = Ks_0p*EXP(lnkpok0(5))
@@ -556,33 +555,52 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
   RETURN
 END SUBROUTINE constants
 
-function calculate_k0(op_gas, tk, dtempot, patmd, prb, s) result(k0_value)
+function calculate_tk0(op_gas, tk, dtempot) result(tk0_value)
     ! Arguments
     character(len=*), intent(in) :: op_gas
     real(r8), intent(in) :: tk          ! in situ temperature (K)
     real(r8), intent(in) :: dtempot     ! potential temperature (C)
-    real(r8), intent(in) :: patmd       ! atmospheric pressure (atm)
-    real(r8), intent(in) :: prb         ! hydrostatic pressure (bar)
-    real(r8), intent(in) :: s           ! salinity
     
     ! Result
-    real(r8) :: k0_value
+    real(r8) :: tk0_value
     
-    ! Local variables
-    real(r8) :: tk0, ptot, phydro_atm, tmp, nk0we74
-    
-    ! Determine temperature and pressure based on gas option
+    ! Determine temperature based on gas option
     select case (trim(adjustl(op_gas)))
     case ('Pzero', 'pzero')
-        tk0 = tk                        ! in situ temperature (K)
+        tk0_value = tk                        ! in situ temperature (K)
+    case ('Ppot', 'ppot')  
+        tk0_value = dtempot + zero_c_in_kelvin ! potential temperature (K)
+    case ('Pinsitu', 'pinsitu')
+        tk0_value = tk                         ! in situ temperature (K)
+    case default
+        print *, "error: op_gas must be 'Pzero'/'pzero', 'Ppot'/'ppot', or 'Pinsitu'/'pinsitu'"
+        stop
+    end select
+    
+    
+end function calculate_tk0
+
+function calculate_ptot(op_gas, patmd, prb) result(ptot)
+    ! Arguments
+    character(len=*), intent(in) :: op_gas
+    real(r8), intent(in) :: patmd       ! atmospheric pressure (atm)
+    real(r8), intent(in) :: prb         ! hydrostatic pressure (bar)
+    
+    ! Result
+    real(r8) :: ptot
+    
+    ! Local variables
+    real(r8) :: phydro_atm
+    
+    ! Determine pressure based on gas option
+    select case (trim(adjustl(op_gas)))
+    case ('Pzero', 'pzero')
         ptot = patmd                    ! atmospheric pressure only
 
     case ('Ppot', 'ppot')  
-        tk0 = dtempot + zero_c_in_kelvin ! potential temperature (K)
         ptot = patmd                     ! atmospheric pressure only
 
     case ('Pinsitu', 'pinsitu')
-        tk0 = tk                         ! in situ temperature (K)
         phydro_atm = prb / bar_to_atm    ! convert bar to atm
         ptot = patmd + phydro_atm        ! total pressure
 
@@ -590,6 +608,20 @@ function calculate_k0(op_gas, tk, dtempot, patmd, prb, s) result(k0_value)
         print *, "error: op_gas must be 'Pzero'/'pzero', 'Ppot'/'ppot', or 'Pinsitu'/'pinsitu'"
         stop
     end select
+    
+    
+end function calculate_ptot
+
+function calculate_k0(tk0, s) result(k0_value)
+    ! Arguments
+    real(r8), intent(in) :: tk0          ! in situ temperature (K)
+    real(r8), intent(in) :: s           ! salinity
+    
+    ! Result
+    real(r8) :: k0_value
+    
+    ! Local variables
+    real(r8) :: tmp, nk0we74
     
     ! Calculate K0 (Weiss 1974 formulation)
     tmp = 9345.17_r8/tk0 - 60.2409_r8 + 23.3585_r8 * log(tk0/100.0_r8)
