@@ -388,14 +388,14 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 
 !       K1 = [H][HCO3]/[H2CO3]
 !       K2 = [H][CO3]/[HCO3]
-        k1(i) = calculate_k1(opk1k2, invtk, dlogtk, s, s2, sqrts)
-        k2(i) = calculate_k2(opk1k2, invtk, dlogtk, s, s2, sqrts)
+        k1(i) = calculate_k1(opk1k2, invtk, dlogtk, s)
+        k2(i) = calculate_k2(opk1k2, invtk, dlogtk, s)
 
 !       Kb = [H][BO2]/[HBO2]
 !       (total scale)
 !       Millero p.669 (1995) using data from Dickson (1990)
         ! DOI: https://doi.org/10.1016/0016-7037(94)00354-O 
-        Kb(i) = calculate_kb(tk, invtk, dlogtk, s, sqrts, s15, s2)
+        Kb(i) = calculate_kb(tk, invtk, dlogtk, s)
 
 !       K1p = [H][H2PO4]/[H3PO4]
 !       (seawater scale)
@@ -404,7 +404,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 115.540 constant instead of 115.525 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        k1p(i) = calculate_k1p(invtk, dlogtk, s, sqrts)
+        k1p(i) = calculate_k1p(invtk, dlogtk, s)
 !       K2p = [H][HPO4]/[H2PO4]
 !       (seawater scale)
 !       DOE(1994) eq 7.2.23 with footnote using data from Millero (1974))
@@ -412,7 +412,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 172.1033 constant instead of 172.0833 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        k2p(i) = calculate_k2p(invtk, dlogtk, s, sqrts)
+        k2p(i) = calculate_k2p(invtk, dlogtk, s)
 
 !       K3p = [H][PO4]/[HPO4]
 !       (seawater scale)
@@ -421,14 +421,14 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 18.126 constant instead of 18.141 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        k3p(i) = calculate_k3p(invtk, sqrts, s)
+        k3p(i) = calculate_k3p(invtk,  s)
 !       Ksi = [H][SiO(OH)3]/[Si(OH)4]
 !       (seawater scale)
 !       Millero (1995), p.671, eq. 72
 !       Use Millero equation's 117.400 constant instead of 117.385 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        ksi(i) = calculate_ksi(invtk, dlogtk, sqrtis, is, is2, s)
+        ksi(i) = calculate_ksi(invtk, dlogtk,is, s)
 
 !       Kw = [H][OH]
 !       (seawater scale)
@@ -436,28 +436,28 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 148.9802 constant instead of 148.9652 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        kw(i) = calculate_kw(invtk, dlogtk, sqrts, s)
+        kw(i) = calculate_kw(invtk, dlogtk, s)
 
 !       Kspc (calcite) - apparent solubility product of calcite
 !       (no scale)
 !       Kspc = [Ca2+] [CO32-] when soln is in equilibrium w/ calcite
 !       Mucci 1983 mol/kg-soln
-        kspc(i) = calculate_kspc(tk, s, sqrts, s15)
+        kspc(i) = calculate_kspc(tk, s)
 
 !       Kspa (aragonite) - apparent solubility product of aragonite
 !       (no scale)
 !       Kspa = [Ca2+] [CO32-] when soln is in equilibrium w/ aragonite
 !       Mucci 1983 mol/kg-soln
-        kspa(i) = calculate_kspa(tk, s, sqrts, s15)
+        kspa(i) = calculate_kspa(tk, s)
 
 !       Ks = [H][SO4]/[HSO4]
 !       (free scale)
 !       Dickson (1990, J. chem. Thermodynamics 22, 113)
-        Ks_0p = calculate_ks_no_pressure(invtk, dlogtk, sqrtis, is, is2, s)
+        Ks_0p = calculate_ks_no_pressure(invtk, dlogtk,  is,  s)
 
 !       Kf = [H][F]/[HF]
 !       (total scale)
-        kf_0p = calculate_kf_no_pressure(opkf, invtk, sqrtis, sqrts, s, st(i), ks_0p)
+        kf_0p = calculate_kf_no_pressure(opkf, invtk, is, s, st(i), ks_0p)
 
 !       Pressure effect on all other K's (based on Millero, (1995)
 !           index: K1(1), K2(2), Kb(3), Kw(4), Ks(5), Kf(6), Kspc(7), Kspa(8),
@@ -598,17 +598,21 @@ function calculate_k0(op_gas, tk, dtempot, patmd, prb, s) result(k0_value)
     
 end function calculate_k0
 
-function calculate_k1(op_k1k2, invtk, dlogtk, s, s2, sqrts) result(k1_value)
+function calculate_k1(op_k1k2, invtk, dlogtk, s) result(k1_value)
     
     ! Arguments
     character(len=*), intent(in) :: op_k1k2
-    real(r8), intent(in) :: invtk, dlogtk, s, s2, sqrts
+    real(r8), intent(in) :: invtk, dlogtk, s
+    real(r8) :: s2, sqrts
     
     ! Result
     real(r8) :: k1_value
     
     ! Local variables
     real(r8) :: pk1o, ma1, mb1, mc1, pk1
+
+    s2 = s*s 
+    sqrts = SQRT(s)
     
     select case (trim(op_k1k2))
     case ('l')
@@ -641,18 +645,23 @@ function calculate_k1(op_k1k2, invtk, dlogtk, s, s2, sqrts) result(k1_value)
     
 end function calculate_k1
 
-function calculate_k2(op_k1k2, invtk, dlogtk, s, s2, sqrts) result(k2_value)
+function calculate_k2(op_k1k2, invtk, dlogtk, s) result(k2_value)
     implicit none
     
     ! Arguments
     character(len=*), intent(in) :: op_k1k2
-    real(r8), intent(in) :: invtk, dlogtk, s, s2, sqrts
+    real(r8), intent(in) :: invtk, dlogtk, s
+    real(r8) :: s2, sqrts
+
     
     ! Result
     real(r8) :: k2_value
     
     ! Local variables
     real(r8) :: pk2o, ma2, mb2, mc2, pk2
+
+    s2 = s*s 
+    sqrts = SQRT(s)
     
     select case (trim(op_k1k2))
     case ('l')
@@ -685,14 +694,18 @@ function calculate_k2(op_k1k2, invtk, dlogtk, s, s2, sqrts) result(k2_value)
     
 end function calculate_k2
 
-function calculate_kb(tk, invtk, dlogtk, s, sqrts, s15, s2) result(kb_value)
+function calculate_kb(tk, invtk, dlogtk, s) result(kb_value)
     
     ! Arguments
-    real(r8), intent(in) :: tk, invtk, dlogtk, s, sqrts, s15, s2
+    real(r8), intent(in) :: tk, invtk, dlogtk, s
+    real(r8) :: sqrts, s15, s2
     
     ! Result
     real(r8) :: kb_value
-    
+   
+    sqrts = sqrt(s)
+    s15 = s**1.5d0
+    s2 = s**2
     ! Calculate Kb (total scale)
     kb_value = exp((-8966.90_r8 - 2890.53_r8*sqrts - 77.942_r8*s + &
                     1.728_r8*s15 - 0.0996_r8*s2)*invtk + &
@@ -702,13 +715,16 @@ function calculate_kb(tk, invtk, dlogtk, s, sqrts, s15, s2) result(kb_value)
     
 end function calculate_kb
 
-function calculate_k1p(invtk, dlogtk, s, sqrts) result(k1p_value)
+function calculate_k1p(invtk, dlogtk, s) result(k1p_value)
     
     ! Arguments
-    real(r8), intent(in) :: invtk, dlogtk, s, sqrts
+    real(r8), intent(in) :: invtk, dlogtk, s
+    real(r8) :: sqrts
     
     ! Result
     real(r8) :: k1p_value
+
+    sqrts = sqrt(s)
     
     ! K1p = [H][H2PO4]/[H3PO4] (seawater scale)
     ! DOE(1994) eq 7.2.20 with footnote using data from Millero (1974)
@@ -718,14 +734,16 @@ function calculate_k1p(invtk, dlogtk, s, sqrts) result(k1p_value)
     
 end function calculate_k1p
 
-function calculate_k2p(invtk, dlogtk, s, sqrts) result(k2p_value)
+function calculate_k2p(invtk, dlogtk, s) result(k2p_value)
     
     ! Arguments
-    real(r8), intent(in) :: invtk, dlogtk, s, sqrts
-    
+    real(r8), intent(in) :: invtk, dlogtk, s
+    real(r8) :: sqrts
+
     ! Result
     real(r8) :: k2p_value
-    
+
+    sqrts = SQRT(s)
     ! K2p = [H][HPO4]/[H2PO4] (seawater scale)
     ! DOE(1994) eq 7.2.23 with footnote using data from Millero (1974)
     k2p_value = exp(-8814.715_r8*invtk + 172.1033_r8 - 27.927_r8*dlogtk + &
@@ -734,14 +752,15 @@ function calculate_k2p(invtk, dlogtk, s, sqrts) result(k2p_value)
     
 end function calculate_k2p
 
-function calculate_k3p(invtk, sqrts, s) result(k3p_value)
+function calculate_k3p(invtk, s) result(k3p_value)
     
     ! Arguments
-    real(r8), intent(in) :: invtk, sqrts, s
-    
+    real(r8), intent(in) :: invtk, s
+    real(r8) :: sqrts
+
     ! Result
     real(r8) :: k3p_value
-    
+    sqrts = sqrt(s)
     ! K3p = [H][PO4]/[HPO4] (seawater scale)
     ! DOE(1994) eq 7.2.26 with footnote using data from Millero (1974)
     k3p_value = exp(-3070.75_r8*invtk - 18.126_r8 + &
@@ -750,13 +769,17 @@ function calculate_k3p(invtk, sqrts, s) result(k3p_value)
     
 end function calculate_k3p
 
-function calculate_ksi(invtk, dlogtk, sqrtis, is, is2, s) result(ksi_value)
+function calculate_ksi(invtk, dlogtk, s, is) result(ksi_value)
     
     ! Arguments
-    real(r8), intent(in) :: invtk, dlogtk, sqrtis, is, is2, s
-    
+    real(r8), intent(in) :: invtk, dlogtk, is, s
+    real(r8) :: sqrtis, is2
+
     ! Result
     real(r8) :: ksi_value
+
+    is2 = is * is 
+    sqrtis = sqrt(is)
     
     ! Ksi = [H][SiO(OH)3]/[Si(OH)4] (seawater scale)
     ! Millero (1995), p.671, eq. 72
@@ -768,13 +791,16 @@ function calculate_ksi(invtk, dlogtk, sqrtis, is, is2, s) result(ksi_value)
     
 end function calculate_ksi
 
-function calculate_kw(invtk, dlogtk, sqrts, s) result(kw_value)
+function calculate_kw(invtk, dlogtk, s) result(kw_value)
     
     ! Arguments
-    real(r8), intent(in) :: invtk, dlogtk, sqrts, s
+    real(r8), intent(in) :: invtk, dlogtk, s
+    real(r8) :: sqrts
     
     ! Result
     real(r8) :: kw_value
+
+    sqrts = sqrt(s)
     
     ! Kw = [H][OH] (seawater scale)
     ! Millero (1995) p.670, eq. 63 from composite data
@@ -784,14 +810,17 @@ function calculate_kw(invtk, dlogtk, sqrts, s) result(kw_value)
     
 end function calculate_kw
 
-function calculate_kspc(tk, s, sqrts, s15) result(kspc_value)
+function calculate_kspc(tk, s) result(kspc_value)
     
     ! Arguments
-    real(r8), intent(in) :: tk, s, sqrts, s15
+    real(r8), intent(in) :: tk, s
+    real(r8) :: sqrts, s15
     
     ! Result
     real(r8) :: kspc_value
-    
+
+    s15 = s**1.5_r8
+    sqrts = sqrt(s)
     ! Kspc (calcite) - apparent solubility product of calcite
     ! Kspc = [Ca2+] [CO32-] when soln is in equilibrium w/ calcite
     ! Mucci 1983 mol/kg-soln
@@ -802,13 +831,16 @@ function calculate_kspc(tk, s, sqrts, s15) result(kspc_value)
     
 end function calculate_kspc
 
-function calculate_kspa(tk, s, sqrts, s15) result(kspa_value)
+function calculate_kspa(tk, s) result(kspa_value)
     
     ! Arguments
-    real(r8), intent(in) :: tk, s, sqrts, s15
+    real(r8), intent(in) :: tk, s
+    real(r8) :: sqrts, s15
     
     ! Result
     real(r8) :: kspa_value
+    s15 = s**1.5_r8
+    sqrts = sqrt(s)
     
     ! Kspa (aragonite) - apparent solubility product of aragonite
     ! Kspa = [Ca2+] [CO32-] when soln is in equilibrium w/ aragonite
@@ -820,13 +852,16 @@ function calculate_kspa(tk, s, sqrts, s15) result(kspa_value)
     
 end function calculate_kspa
 
-function calculate_ks_no_pressure(invtk, dlogtk, sqrtis, is, is2, s) result(ks_0p_value)
-    
+function calculate_ks_no_pressure(invtk, dlogtk, s, is) result(ks_0p_value)
+
     ! Arguments
-    real(r8), intent(in) :: invtk, dlogtk, sqrtis, is, is2, s
-    
+    real(r8), intent(in) :: invtk, dlogtk, s, is
+    real(r8) :: sqrtis, is2
+
     ! Result
     real(r8) :: ks_0p_value
+    is2 = is * is 
+    sqrtis = sqrt(is)
     
     ! Ks = [H][SO4]/[HSO4] (free scale) at zero pressure
     ! Dickson (1990, J. chem. Thermodynamics 22, 113)
@@ -838,16 +873,20 @@ function calculate_ks_no_pressure(invtk, dlogtk, sqrtis, is, is2, s) result(ks_0
     
 end function calculate_ks_no_pressure
 
-function calculate_kf_no_pressure(op_kf, invtk, sqrtis, sqrts, s, st, ks_0p) result(kf_0p_value)
+function calculate_kf_no_pressure(op_kf, invtk, is, s, st, ks_0p) result(kf_0p_value)
     implicit none
     
     ! Arguments
     character(len=*), intent(in) :: op_kf
-    real(r8), intent(in) :: invtk, sqrtis, sqrts, s, st, ks_0p
-    
+    real(r8), intent(in) :: invtk, is, s, st, ks_0p
+    real(r8) :: sqrtis, sqrts
+
+
     ! Result
     real(r8) :: kf_0p_value
     
+    sqrtis = sqrt(is)
+    sqrts = sqrt(s)
     ! Kf = [H][F]/[HF] (total scale) at zero pressure
     select case (trim(op_kf))
     case ('dg')
