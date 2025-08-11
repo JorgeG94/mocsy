@@ -41,11 +41,12 @@ FCFLAGS = -fPIC -cpp -DUSE_PRECISION=$(PRECISION)
 #DEBUGFLAGS = -g
 #LDFLAGS = -L/usr/local/lib -lnetcdf -lnetcdff
 LDFLAGS = -L./ -lmocsy
-INCLUDEFLAGS = -I/usr/local/include -Isrc
+INCLUDEFLAGS = -I . -Isrc
 
 
 # List of executables to be built within the package
-PROGRAMS = libmocsy.a mocsy.so test_mocsy test_errors test_derivauto test_derivnum test_buffesm test_phizero test_kprime test_kzero
+#PROGRAMS = libmocsy.a mocsy.so test_mocsy test_errors test_derivauto test_derivnum test_buffesm test_phizero test_kprime test_kzero
+PROGRAMS = libmocsy.a
 
 # "make" builds all
 all: $(PROGRAMS)
@@ -55,7 +56,7 @@ all: $(PROGRAMS)
 # Look for .F90 files first in the 'src' directory, then in the 'examples' directory
 
 vpath %.F90 src
-vpath %     examples
+#vpath %     examples
 
 #vpath %.h src
 
@@ -71,6 +72,7 @@ SOURCES = mocsy_singledouble.F90 \
           mocsy_rhoinsitu.F90 \
           mocsy_depth2press.F90 \
           mocsy_constants.F90 \
+          mocsy_constants_DNAD.F90 \
           mocsy_varsolver.F90 \
           mocsy_vars.F90 \
           mocsy_derivauto.F90 \
@@ -93,6 +95,7 @@ OBJS =  mocsy_singledouble.o \
         mocsy_rhoinsitu.o \
         mocsy_depth2press.o \
         mocsy_constants.o \
+        mocsy_constants_DNAD.o \
         mocsy_varsolver.o \
         mocsy_vars.o \
 	mocsy_derivauto.o \
@@ -103,7 +106,7 @@ OBJS =  mocsy_singledouble.o \
         mocsy_f2pCO2.o \
         mocsy_gasx.o
 
-EXEC = test_mocsy
+#EXEC = test_mocsy
 
 library = libmocsy.a
 #---------------------------------------------------------------------------
@@ -130,19 +133,19 @@ $(library): mocsy_DNAD.o $(OBJS)
 #	f2py -c $(SOURCES) -m mocsy --fcompiler=gnu95 --f90flags=-O3
 #	rm $(SOURCES)
 #=======
-$(EXEC): $(EXEC).o mocsy_DNAD.o $(OBJS) test_mocsy.o $(library) 
-	$(FC) $(FCFLAGS) -o $@ $@.o $(LDFLAGS)
+#$(EXEC): $(EXEC).o mocsy_DNAD.o $(OBJS) test_mocsy.o $(library) 
+#	$(FC) $(FCFLAGS) -o $@ $@.o $(LDFLAGS)
 
 # Build the shared object file for python
-mocsy.so: mocsy_DNAD.o $(SOURCES)
-	cp src/*.F90 .
-	# Select the kind map
-	cp -f src/$(KIND_MAP) .f2py_f2cmap
-	f2py -c $(SOURCES) skip: varsolver_dnad : skip: constants_dnad :        \
-	skip: sw_ptmp_dnad : skip: sw_temp_dnad : skip: sw_adtg_dnad :          \
-	skip: rho_dnad : skip: equation_at_dnad : skip: solve_at_general_dnad : \
-	mocsy_DNAD.o -m mocsy --fcompiler=gnu95 --f90flags="$(FCFLAGS)"
-	rm $(SOURCES) mocsy_DNAD.F90
+#mocsy.so: mocsy_DNAD.o $(SOURCES)
+#	cp src/*.F90 .
+#	# Select the kind map
+#	cp -f src/$(KIND_MAP) .f2py_f2cmap
+#	f2py -c $(SOURCES) skip: varsolver_dnad : skip: constants_dnad :        \
+#	skip: sw_ptmp_dnad : skip: sw_temp_dnad : skip: sw_adtg_dnad :          \
+#	skip: rho_dnad : skip: equation_at_dnad : skip: solve_at_general_dnad : \
+#	mocsy_DNAD.o -m mocsy --fcompiler=gnu95 --f90flags="$(FCFLAGS)"
+#	rm $(SOURCES) mocsy_DNAD.F90
 #---------------------------------------------------------------------------
 # Other test programs
 #test_errors:  $(LIBSRC_OBJECTS) test_errors.o $(library) 
