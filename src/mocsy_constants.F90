@@ -215,7 +215,8 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
   REAL(kind=rx) :: p
   REAL(kind=rx) :: tempot, tempis68, tempot68
   REAL(kind=rx) :: tempis
-  REAL(kind=r8) :: is, invtk, dlogtk, is2, s2, sqrtis
+  REAL(kind=r8) :: ionic_strength
+  !real(kind=r8) is2,  sqrtis
   REAL(kind=r8) :: Ks_0p, Kf_0p
   REAL(kind=r8) :: total2free, free2SWS, total2SWS, SWS2total
   REAL(kind=r8) :: total2free_0p, free2SWS_0p, total2SWS_0p
@@ -229,10 +230,11 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 
   INTEGER :: i, icount
 
-  REAL(kind=r8) :: t, tk, tk0, prb
-  REAL(kind=r8) :: s, sqrts, s15, scl
+  real(kind=r8) :: temperature, temperature_kelvin, inverse_temperature_kelvin, log_temperature_kelvin, tk0
+  !REAL(kind=r8) :: sqrts, s15, s2
+  REAL(kind=r8) :: salinity, scl
 
-  REAL(kind=r8) :: Patmd, Ptot
+  real(kind=r8) :: atmospheric_pressure, hydrostatic_pressure
 ! Arrays to pass optional arguments into or use defaults (Dickson et al., 2007)
   CHARACTER(3) :: opB
   CHARACTER(2) :: opKf
@@ -329,30 +331,26 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
         ENDIF
 
 !       Absolute temperature (Kelvin) and related values
-        t = DBLE(tempis)
-        tk = ZERO_C_IN_KELVIN + t
-        invtk=1.0d0/tk
-        dlogtk=LOG(tk)
+        temperature = DBLE(tempis)
+        temperature_kelvin = ZERO_C_IN_KELVIN + temperature
+        inverse_temperature_kelvin=1.0d0/temperature_kelvin
+        log_temperature_kelvin = LOG(temperature_kelvin)
 
 !       Atmospheric pressure
-        Patmd = DBLE(Patm(i))
+        atmospheric_pressure = DBLE(Patm(i))
 
 !       Hydrostatic pressure (prb is in bars)
-        prb = DBLE(p) / 10.0d0
+        hydrostatic_pressure = DBLE(p) / 10.0d0
 
 !       Salinity and simply related values
-        s = DBLE(ssal)
-        s2=s*s
-        sqrts=SQRT(s)
-        s15=s**1.5d0
+        salinity = DBLE(ssal)
+
         ! what is this magic number?
-        scl=s/1.80655d0
+        scl=salinity/1.80655d0
 
 !       Ionic strength:
         ! more magic numbers
-        is = 19.924d0*s/(1000.0d0 - 1.005d0*s)
-        is2 = is*is
-        sqrtis = SQRT(is)
+        ionic_strength = 19.924d0*salinity/(1000.0d0 - 1.005d0*salinity)
 
 !       Total concentrations for sulfate, fluoride, and boron
 
@@ -379,22 +377,22 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       CO2(g) <-> CO2(aq.)
 !       K0  = [CO2]/ fCO2
 !       Weiss (1974)   [mol/kg/atm]
-        Ptot = calculate_ptot(opgas, patmd, prb)
+        hydrostatic_pressure = calculate_ptot(opgas, atmospheric_pressure, hydrostatic_pressure)
 
-        tk0 = calculate_tk0(opgas, tk, dlogtk)
+        tk0 = calculate_tk0(opgas, temperature_kelvin, dtempot)
 
-        K0(i) = calculate_k0(tk, s)
+        K0(i) = calculate_k0(tk0, salinity)
 
 !       K1 = [H][HCO3]/[H2CO3]
 !       K2 = [H][CO3]/[HCO3]
-        k1(i) = calculate_k1(opk1k2, invtk, dlogtk, s)
-        k2(i) = calculate_k2(opk1k2, invtk, dlogtk, s)
+        k1(i) = calculate_k1(opk1k2, inverse_temperature_kelvin, log_temperature_kelvin, salinity)
+        k2(i) = calculate_k2(opk1k2, inverse_temperature_kelvin, log_temperature_kelvin, salinity)
 
 !       Kb = [H][BO2]/[HBO2]
 !       (total scale)
 !       Millero p.669 (1995) using data from Dickson (1990)
-        ! DOI: https://doi.org/10.1016/0016-7037(94)00354-O 
-        Kb(i) = calculate_kb(tk, invtk, dlogtk, s)
+        ! DOI: https://doi.org/10.1016/0016-7037(94)00354-O
+        Kb(i) = calculate_kb(temperature_kelvin, inverse_temperature_kelvin, log_temperature_kelvin, salinity)
 
 !       K1p = [H][H2PO4]/[H3PO4]
 !       (seawater scale)
@@ -403,7 +401,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 115.540 constant instead of 115.525 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        k1p(i) = calculate_k1p(invtk, dlogtk, s)
+        k1p(i) = calculate_k1p(inverse_temperature_kelvin, log_temperature_kelvin, salinity)
 !       K2p = [H][HPO4]/[H2PO4]
 !       (seawater scale)
 !       DOE(1994) eq 7.2.23 with footnote using data from Millero (1974))
@@ -411,7 +409,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 172.1033 constant instead of 172.0833 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        k2p(i) = calculate_k2p(invtk, dlogtk, s)
+        k2p(i) = calculate_k2p(inverse_temperature_kelvin, log_temperature_kelvin, salinity)
 
 !       K3p = [H][PO4]/[HPO4]
 !       (seawater scale)
@@ -420,14 +418,14 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 18.126 constant instead of 18.141 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        k3p(i) = calculate_k3p(invtk,  s)
+        k3p(i) = calculate_k3p(inverse_temperature_kelvin, salinity)
 !       Ksi = [H][SiO(OH)3]/[Si(OH)4]
 !       (seawater scale)
 !       Millero (1995), p.671, eq. 72
 !       Use Millero equation's 117.400 constant instead of 117.385 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        ksi(i) = calculate_ksi(invtk, dlogtk,is, s)
+        ksi(i) = calculate_ksi(inverse_temperature_kelvin, log_temperature_kelvin, ionic_strength, salinity)
 
 !       Kw = [H][OH]
 !       (seawater scale)
@@ -435,36 +433,36 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 148.9802 constant instead of 148.9652 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        kw(i) = calculate_kw(invtk, dlogtk, s)
+        kw(i) = calculate_kw(inverse_temperature_kelvin, log_temperature_kelvin, salinity)
 
 !       Kspc (calcite) - apparent solubility product of calcite
 !       (no scale)
 !       Kspc = [Ca2+] [CO32-] when soln is in equilibrium w/ calcite
 !       Mucci 1983 mol/kg-soln
-        kspc(i) = calculate_kspc(tk, s)
+        kspc(i) = calculate_kspc(temperature_kelvin, salinity)
 
 !       Kspa (aragonite) - apparent solubility product of aragonite
 !       (no scale)
 !       Kspa = [Ca2+] [CO32-] when soln is in equilibrium w/ aragonite
 !       Mucci 1983 mol/kg-soln
-        kspa(i) = calculate_kspa(tk, s)
+        kspa(i) = calculate_kspa(temperature_kelvin, salinity)
 
 !       Ks = [H][SO4]/[HSO4]
 !       (free scale)
 !       Dickson (1990, J. chem. Thermodynamics 22, 113)
-        Ks_0p = calculate_ks_no_pressure(invtk, dlogtk,  is,  s)
+        Ks_0p = calculate_ks_no_pressure(inverse_temperature_kelvin, log_temperature_kelvin, ionic_strength, salinity)
 
 !       Kf = [H][F]/[HF]
 !       (total scale)
-        kf_0p = calculate_kf_no_pressure(opkf, invtk, is, s, st(i), ks_0p)
+        kf_0p = calculate_kf_no_pressure(opkf, inverse_temperature_kelvin, ionic_strength, salinity, st(i), ks_0p)
 
 !       Pressure effect on all other K's (based on Millero, (1995)
 !           index: K1(1), K2(2), Kb(3), Kw(4), Ks(5), Kf(6), Kspc(7), Kspa(8),
 !                  K1p(9), K2p(10), K3p(11), Ksi(12)
-        call calculate_all_pressure_correction_factors(t, prb, tk, lnkpok0)
+        call calculate_all_pressure_correction_factors(temperature, hydrostatic_pressure, temperature_kelvin, lnkpok0)
 
 !       Pressure effect on K0 based on Weiss (1974, equation 5)
-        K0(i) = K0(i) * exp( ((1-Ptot)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   
+        K0(i) = K0(i) * exp( ((1-hydrostatic_pressure)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   
 
 !       Pressure correction on Ks (Free scale)
         Ks(i) = Ks_0p*EXP(lnkpok0(5))
