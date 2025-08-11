@@ -4,7 +4,8 @@
 MODULE mocsy_vars
 
 USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_constants, only : constants, constants_DNAD
+USE mocsy_constants, only : constants
+use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_p80, only : p80
 USE mocsy_rho, only : rho
 USE mocsy_sw_temp, only : sw_temp

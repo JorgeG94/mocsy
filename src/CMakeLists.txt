@@ -12,6 +12,7 @@ target_sources(mocsy PRIVATE
           mocsy_rhoinsitu.F90 
           mocsy_depth2press.F90 
           mocsy_constants.F90 
+          mocsy_constants_DNAD.F90 
           mocsy_varsolver.F90 
           mocsy_vars.F90 
           mocsy_derivauto.F90 

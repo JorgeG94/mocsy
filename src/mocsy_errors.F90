@@ -4,7 +4,8 @@
 MODULE mocsy_errors
 
 USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_constants, only : constants, constants_DNAD
+USE mocsy_constants, only : constants
+use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_derivnum, only : derivnum
 
 IMPLICIT NONE ; PRIVATE

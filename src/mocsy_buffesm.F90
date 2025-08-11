@@ -4,7 +4,8 @@
 MODULE mocsy_buffesm
 
 USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_constants, only : constants, constants_DNAD
+USE mocsy_constants, only : constants
+USE mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_vars, only : vars
 
 IMPLICIT NONE ; PRIVATE
