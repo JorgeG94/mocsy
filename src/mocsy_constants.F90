@@ -15,7 +15,7 @@ IMPLICIT NONE ; PRIVATE
 PUBLIC constants
 
 real(r8), parameter, public :: ideal_gas_constant_jkmol = 8.314472_r8 ! [J/(mol*K)]
-real(r8), parameter, public :: R_jkmol_scaled_by_10 = 10.0_r8 * ideal_gas_constant_jkmol
+real(r8), parameter, public :: R_jkmol_scaled_by_10 = 83.14472_r8 
 real(r8), parameter, public :: ideal_gas_constant_codata = 82.05736_r8 ! [cm^3*atm/(K*mol)]
 real(r8), parameter, public :: co2_partial_molar_volume = 32.3_r8  ! [cm3/mol]
 REAL(r8), PARAMETER, public :: ZERO_C_IN_KELVIN = 273.15_r8
@@ -234,7 +234,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
   !REAL(kind=r8) :: sqrts, s15, s2
   REAL(kind=r8) :: salinity, scl
 
-  real(kind=r8) :: atmospheric_pressure, hydrostatic_pressure
+  real(kind=r8) :: atmospheric_pressure, hydrostatic_pressure, total_pressure
 ! Arrays to pass optional arguments into or use defaults (Dickson et al., 2007)
   CHARACTER(3) :: opB
   CHARACTER(2) :: opKf
@@ -377,7 +377,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       CO2(g) <-> CO2(aq.)
 !       K0  = [CO2]/ fCO2
 !       Weiss (1974)   [mol/kg/atm]
-        hydrostatic_pressure = calculate_ptot(opgas, atmospheric_pressure, hydrostatic_pressure)
+        total_pressure = calculate_ptot(opgas, atmospheric_pressure, hydrostatic_pressure)
 
         tk0 = calculate_tk0(opgas, temperature_kelvin, dtempot)
 
@@ -450,19 +450,18 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Ks = [H][SO4]/[HSO4]
 !       (free scale)
 !       Dickson (1990, J. chem. Thermodynamics 22, 113)
-        Ks_0p = calculate_ks_no_pressure(inverse_temperature_kelvin, log_temperature_kelvin, ionic_strength, salinity)
+        Ks_0p = calculate_ks_no_pressure(inverse_temperature_kelvin, log_temperature_kelvin, salinity, ionic_strength)
 
 !       Kf = [H][F]/[HF]
 !       (total scale)
         kf_0p = calculate_kf_no_pressure(opkf, inverse_temperature_kelvin, ionic_strength, salinity, st(i), ks_0p)
-
 !       Pressure effect on all other K's (based on Millero, (1995)
 !           index: K1(1), K2(2), Kb(3), Kw(4), Ks(5), Kf(6), Kspc(7), Kspa(8),
 !                  K1p(9), K2p(10), K3p(11), Ksi(12)
         call calculate_all_pressure_correction_factors(temperature, hydrostatic_pressure, temperature_kelvin, lnkpok0)
 
 !       Pressure effect on K0 based on Weiss (1974, equation 5)
-        K0(i) = K0(i) * exp( ((1-hydrostatic_pressure)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   
+        K0(i) = K0(i) * exp( ((1-total_pressure)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   
 
 !       Pressure correction on Ks (Free scale)
         Ks(i) = Ks_0p*EXP(lnkpok0(5))
@@ -734,14 +733,15 @@ function calculate_kb(tk, invtk, dlogtk, s) result(kb_value)
     real(r8) :: kb_value
    
     sqrts = sqrt(s)
-    s15 = s**1.5d0
-    s2 = s**2
+    s15 = s**1.5_r8
+    s2 = s*s
     ! Calculate Kb (total scale)
     kb_value = exp((-8966.90_r8 - 2890.53_r8*sqrts - 77.942_r8*s + &
                     1.728_r8*s15 - 0.0996_r8*s2)*invtk + &
                    (148.0248_r8 + 137.1942_r8*sqrts + 1.62142_r8*s) + &
                    (-24.4344_r8 - 25.085_r8*sqrts - 0.2474_r8*s) * &
                    dlogtk + 0.053105_r8*sqrts*tk)
+
     
 end function calculate_kb
 
@@ -895,11 +895,11 @@ function calculate_ks_no_pressure(invtk, dlogtk, s, is) result(ks_0p_value)
     
     ! Ks = [H][SO4]/[HSO4] (free scale) at zero pressure
     ! Dickson (1990, J. chem. Thermodynamics 22, 113)
-    ks_0p_value = exp(-4276.1_r8*invtk + 141.328_r8 - 23.093_r8*dlogtk + &
-                      (-13856._r8*invtk + 324.57_r8 - 47.986_r8*dlogtk) * sqrtis + &
-                      (35474._r8*invtk - 771.54_r8 + 114.723_r8*dlogtk) * is - &
-                      2698._r8*invtk*is**1.5_r8 + 1776._r8*invtk*is2 + &
-                      log(1.0_r8 - 0.001005_r8*s))
+     ks_0p_value =  exp(-4276.1_r8*invtk + 141.328_r8 - 23.093_r8*dlogtk + &
+                       (-13856._r8*invtk + 324.57_r8 - 47.986_r8*dlogtk) * sqrtis + &
+                       (35474._r8*invtk - 771.54_r8 + 114.723_r8*dlogtk) * is &
+                        - 2698._r8*invtk*is**1.5_r8  + 1776._r8*invtk*is2 + &
+                       log(1.0_r8 - 0.001005_r8*s))
     
 end function calculate_ks_no_pressure
 
@@ -942,15 +942,15 @@ subroutine calculate_all_pressure_correction_factors(t, prb, tk, pressure_correc
     ! Arguments
     real(r8), intent(in) :: t, prb, tk
     real(r8), intent(out) :: pressure_correction_factors(12)
+
     
     ! Local variables
     integer :: ipc
     real(r8) :: deltav, deltak
-    
     do ipc = 1, 12
         deltav = a0(ipc) + a1(ipc)*t + a2(ipc)*t*t
         deltak = b0(ipc) + b1(ipc)*t + b2(ipc)*t*t
-        pressure_correction_factors(ipc) = ((-deltav) + (0.5_r8*deltak*prb)) * prb / (r_jkmol_scaled_by_10*tk)
+        pressure_correction_factors(ipc) = (-(deltav) + (0.5_r8*deltak*prb)) * prb / (R_jkmol_scaled_by_10*tk)
     end do
     
 end subroutine calculate_all_pressure_correction_factors
