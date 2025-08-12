@@ -8,28 +8,6 @@ USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
 
-
-public :: compute_adiabatic_temperature_gradient
-
-interface compute_adiabatic_temperature_gradient
-  module procedure :: sw_adtg_single
-  module procedure :: sw_adtg_DNAD
-end interface compute_adiabatic_temperature_gradient
-
-CONTAINS
-!>  Function to calculate adiabatic temperature gradient as per UNESCO 1983 routines.
-FUNCTION sw_adtg_single(s, t, p)
-  !     ==================================================================
-  !     Calculates adiabatic temperature gradient as per UNESCO 1983 routines.
-  !     Armin Koehl akoehl@ucsd.edu
-  !     ==================================================================
-  !> salinity [psu (PSU-78)]
-  REAL(kind=r8) :: s
-  !> temperature [degree C (IPTS-68)]
-  REAL(kind=r8) :: t
-  !> pressure [db]
-  REAL(kind=r8) :: p
-  REAL(kind=r8) :: sw_adtg_single
   REAL(kind=r8), PARAMETER :: sref = 35.0d0
   REAL(kind=r8), PARAMETER :: a0 = 3.5803d-5
   REAL(kind=r8), PARAMETER :: a1 = 8.5258d-6
@@ -46,6 +24,29 @@ FUNCTION sw_adtg_single(s, t, p)
   REAL(kind=r8), PARAMETER :: e0 = -4.6206d-13
   REAL(kind=r8), PARAMETER :: e1 = 1.8676d-14
   REAL(kind=r8), PARAMETER :: e2 = -2.1687d-16
+
+public :: compute_adiabatic_temperature_gradient
+
+interface compute_adiabatic_temperature_gradient
+  !     ==================================================================
+  !     Calculates adiabatic temperature gradient as per UNESCO 1983 routines.
+  !     Armin Koehl akoehl@ucsd.edu
+  !     ==================================================================
+  module procedure :: sw_adtg_single
+  module procedure :: sw_adtg_DNAD
+end interface compute_adiabatic_temperature_gradient
+
+CONTAINS
+!>  Function to calculate adiabatic temperature gradient as per UNESCO 1983 routines.
+FUNCTION sw_adtg_single(s, t, p)
+  !> salinity [psu (PSU-78)]
+  REAL(kind=r8) :: s
+  !> temperature [degree C (IPTS-68)]
+  REAL(kind=r8) :: t
+  !> pressure [db]
+  REAL(kind=r8) :: p
+  REAL(kind=r8) :: sw_adtg_single
+
   
 
   
@@ -61,10 +62,6 @@ END FUNCTION sw_adtg_single
 !! and derivative with respect to temperature and salinity
 FUNCTION sw_adtg_DNAD  (s,t,p)
 
-  !     ==================================================================
-  !     Calculates adiabatic temperature gradient as per UNESCO 1983 routines.
-  !     Armin Koehl akoehl@ucsd.edu
-  !     ==================================================================
 
   !> salinity [psu (PSU-78)]
   TYPE(DUAL_NUM) :: s
@@ -72,24 +69,6 @@ FUNCTION sw_adtg_DNAD  (s,t,p)
   TYPE(DUAL_NUM) :: t
   !> pressure [db]
   TYPE(DUAL_NUM) :: p
-
-  REAL(kind=r8), PARAMETER :: sref = 35.0d0
-  REAL(kind=r8), PARAMETER :: a0 = 3.5803d-5
-  REAL(kind=r8), PARAMETER :: a1 = 8.5258d-6
-  REAL(kind=r8), PARAMETER :: a2 = -6.836d-8
-  REAL(kind=r8), PARAMETER :: a3 = 6.6228d-10
-  REAL(kind=r8), PARAMETER :: b0 = 1.8932d-6
-  REAL(kind=r8), PARAMETER :: b1 = -4.2393d-8
-  REAL(kind=r8), PARAMETER :: c0 = 1.8741d-8
-  REAL(kind=r8), PARAMETER :: c1 = -6.7795d-10
-  REAL(kind=r8), PARAMETER :: c2 = 8.733d-12
-  REAL(kind=r8), PARAMETER :: c3 = -5.4481d-14
-  REAL(kind=r8), PARAMETER :: d0 = -1.1351d-10
-  REAL(kind=r8), PARAMETER :: d1 = 2.7759d-12
-  REAL(kind=r8), PARAMETER :: e0 = -4.6206d-13
-  REAL(kind=r8), PARAMETER :: e1 = 1.8676d-14
-  REAL(kind=r8), PARAMETER :: e2 = -2.1687d-16
-  
 
   TYPE(DUAL_NUM) :: sw_adtg_DNAD
 
