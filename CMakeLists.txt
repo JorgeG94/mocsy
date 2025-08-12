@@ -22,6 +22,7 @@ option(MOCSY_PRECISION "Precision to use (1 or 2)" 2)
 option(BUILD_SHARED_LIBS "Build shared/dynamic libraries" OFF)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 
 ################################################################################
 
@@ -55,6 +56,10 @@ else()
 endif()
 
 ################################################################################
+if(NOT TARGET test-drive::test-drive AND MOCSY_ENABLE_TESTING)
+  enable_testing()
+  find_package("test-drive" REQUIRED)
+endif()
 
 add_library(mocsy)
 

@@ -1,0 +1,39 @@
+name = "mocsy"
+version = "0.1.0"
+license = "MIT"
+author = "ACCESS-NRI"
+maintainer = "jorgegalvez1694@gmail.com"
+copyright = "Copyright 2024, MOCSY?"
+[preprocess]
+[preprocess.cpp]
+suffixes = ["F90", "f90"]
+macros = ["USE_PRECISION=2"]
+
+[library]
+source-dir = "src"
+
+[build]
+auto-executables = false 
+auto-tests = false
+auto-examples = false 
+module-naming = false
+[[test]]
+name = "mocsy_tests"
+source-dir = "test-suite"
+main = "main_tests.f90"
+[install]
+library = true
+
+[fortran]
+implicit-typing = true
+implicit-external = true
+source-form = "free"
+
+[dependencies]
+test-drive.git = "https://github.com/fortran-lang/test-drive"
+pic = { git = "https://github.com/JorgeG94/pic.git", branch = "main"}
+[extra.fortitude.check]
+select = ["C", "E", "S"]
+ignore = ["C003"]
+line-length = 132
+per-file-ignores = { "pic_blas_interfaces.F90" = ["C071"] }

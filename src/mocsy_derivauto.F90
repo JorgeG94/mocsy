@@ -340,8 +340,9 @@ SUBROUTINE derivauto(ph_deriv, pco2_deriv, fco2_deriv, co2_deriv, hco3_deriv, co
              .OR.  dic(i) > 1e+3 &
              .OR.  sil(i) > 1e+3 &
              .OR. phos(i) > 1e+3) THEN
-           PRINT *, 'i, icount, tempot, sal,    alk,    dic,    sil,    phos =', &
-                     i, icount, tempot, sal(i), alk(i), dic(i), sil(i), phos(i)
+            print *, " WARNING, unreasonable input variables !"
+            PRINT *, 'i, icount, tempot, sal,    alk,    dic,    sil,    phos =', &
+                      i, icount, tempot, sal(i), alk(i), dic(i), sil(i), phos(i)
         ENDIF
 !       Zero out any negative salinity, phosphate, silica, dic, and alk
         IF (sal(i) < 0.0) THEN

@@ -349,6 +349,7 @@ SUBROUTINE derivnum (dh_dx, dpco2_dx, dfco2_dx, dco2_dx, dhco3_dx,              
     adepth(1) = depth(i)
     alat(1)   = lat(i)
 
+
     IF (deriv_K) THEN
         ! Choose value of absolute perturbation
         abs_delta = K_values(var_index) * 1.d-3   ! 0.1 percent of Kx value
@@ -400,6 +401,11 @@ SUBROUTINE derivnum (dh_dx, dpco2_dx, dfco2_dx, dco2_dx, dhco3_dx,              
 
         ! Determine two slightly different values of selected input value
         abs_delta = input_value * rel_delta_x
+        if (abs_delta < 1.0e-12_rx) then
+          ! this prevents a division by 0!!!
+          print *, "Warning: Input value too small for reliable numerical derivative, cycling"
+          cycle
+        end if
         ainput1(1) = input_value - abs_delta
         ainput2(1) = input_value + abs_delta
         ! Compute total absolue delta
@@ -483,7 +489,6 @@ SUBROUTINE derivnum (dh_dx, dpco2_dx, dfco2_dx, dco2_dx, dhco3_dx,              
     h(1,2) = 10**(-ph(1,2))
     
     ! Compute derivatives by method of centered difference
-
     dh_dx(i)      = (h(1,2)    - h(1,1))    / dx
     dpco2_dx(i)   = (pco2(1,2) - pco2(1,1)) / dx
     dfco2_dx(i)   = (fco2(1,2) - fco2(1,1)) / dx

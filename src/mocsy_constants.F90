@@ -126,12 +126,12 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
   !     K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa, K1p, K2p, K3p, Ksi
   !     St, Ft, Bt
 
+
 #if USE_PRECISION == 2
 #   define SGLE(x)    (x)
 #else
 #   define SGLE(x)    REAL(x)
 #endif
-
 ! Input variables
   !>     number of records
 !f2py intent(hide) number_of_records
@@ -300,7 +300,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !          (see Dickson et al., Best Practices Guide, 2007, Chap. 5, p. 7, including footnote)
         tempot68 = (tempot - 0.0002_rx) / 0.99975_rx
 !       b) Compute "in-situ Temperature" from "Potential Temperature" (both on IPTS 68)
-        tempis68 = sw_temp(sal(i), tempot68, p, SGLE(0.0D0) )
+        tempis68 = sw_temp(sal(i), tempot68, p, SGLE(0.0_rx) )
 !       c) Convert the in-situ temp on older IPTS 68 scale to modern scale (ITS 90)
         tempis = 0.99975_rx*tempis68 + 0.0002_rx
 !       Note: parts (a) and (c) above are tiny corrections;
@@ -434,6 +434,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
         kw(i) = calculate_kw(inverse_temperature_kelvin, log_temperature_kelvin, salinity)
+
 
 !       Kspc (calcite) - apparent solubility product of calcite
 !       (no scale)

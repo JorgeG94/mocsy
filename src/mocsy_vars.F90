@@ -347,8 +347,10 @@ SUBROUTINE vars(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC, BetaD, rhoSW, p,
                .OR.  dic(i) > 1e+3_rx &
                .OR.  sil(i) > 1e+3_rx &
                .OR. phos(i) > 1e+3_rx) THEN
-             PRINT *, 'i, icount, tempot, sal,    alk,    dic,    sil,    phos =', &
-                       i, icount, tempot, sal(i), alk(i), dic(i), sil(i), phos(i)
+            
+            print *, " WARNING, unreasonable input variables !"
+              PRINT *, 'i, icount, tempot, sal,    alk,    dic,    sil,    phos =', &
+                        i, icount, tempot, sal(i), alk(i), dic(i), sil(i), phos(i)
           ENDIF
         ENDIF
 !       Zero out any negative salinity, phosphate, silica, dic, and alk
@@ -707,9 +709,9 @@ SUBROUTINE vars_pertK(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,     &
 !       This is the case for most models and some data
 !       a) Convert the pot. temp on today's "ITS 90" scale to older IPTS 68 scale
 !          (see Dickson et al., Best Practices Guide, 2007, Chap. 5, p. 7, including footnote)
-        tempot68 = (tempot - 0.0002) / 0.99975
+        tempot68 = (tempot - 0.0002_rx) / 0.99975_rx
 !       b) Compute "in-situ Temperature" from "Potential Temperature" (both on IPTS 68)
-        tempis68 = sw_temp(sal(i), SGLE(tempot68), p, SGLE(0.d0) )
+        tempis68 = sw_temp(sal(i), SGLE(tempot68), p, SGLE(0.0_rx) )
 !       c) Convert the in-situ temp on older IPTS 68 scale to modern scale (ITS 90)
         tempis90 = 0.99975*tempis68 + 0.0002
 !       Note: parts (a) and (c) above are tiny corrections;
@@ -741,8 +743,9 @@ SUBROUTINE vars_pertK(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,     &
              .OR.  dic(i) > 1e+3 &
              .OR.  sil(i) > 1e+3 &
              .OR. phos(i) > 1e+3) THEN
-           PRINT *, 'i, icount, tempot, sal,    alk,    dic,    sil,    phos =', &
-                     i, icount, tempot, sal(i), alk(i), dic(i), sil(i), phos(i)
+            print *, " WARNING, unreasonable input variables !"
+            PRINT *, 'i, icount, tempot, sal,    alk,    dic,    sil,    phos =', &
+                      i, icount, tempot, sal(i), alk(i), dic(i), sil(i), phos(i)
         ENDIF
 !       Zero out any negative salinity, phosphate, silica, dic, and alk
         IF (sal(i) < 0.0) THEN
