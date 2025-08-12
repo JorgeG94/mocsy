@@ -38,9 +38,6 @@ SUBROUTINE depth2press(depth, lat, pdbar, N)
   !     Local variables
   INTEGER :: i
 
-! REAL(kind=rx) ::  p80
-! EXTERNAL p80
-
   DO i = 1,N
      pdbar(i) = p80(depth(i), lat(i))
   END DO

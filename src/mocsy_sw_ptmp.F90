@@ -40,8 +40,7 @@ FUNCTION sw_ptmp  (s,t,p,pr)
 
 ! local arguments
   REAL(kind=r8) :: del_P ,del_th, th, q
-  REAL(kind=r8) :: onehalf, two, three
-  PARAMETER (onehalf = 0.5d0, two = 2.d0, three = 3.d0 )
+  real(r8), parameter :: onehalf = 0.5d0, two = 2.d0, three = 3.d0 
 
 ! REAL(kind=r8) :: sw_adtg
 ! EXTERNAL sw_adtg
@@ -105,8 +104,7 @@ FUNCTION sw_ptmp_DNAD  (s,t,p,pr)
 
 ! local arguments
   TYPE(DUAL_NUM) :: del_P ,del_th, th, q
-  REAL(kind=r8) :: onehalf, two, three
-  PARAMETER (onehalf = 0.5d0, two = 2.d0, three = 3.d0 )
+  real(r8), parameter :: onehalf = 0.5d0, two = 2.d0, three = 3.d0 
 
 ! Output 
   TYPE(DUAL_NUM) :: sw_ptmp_DNAD

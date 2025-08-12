@@ -12,7 +12,9 @@ PUBLIC rx, r8, wp
 
 #if USE_PRECISION == 2
   INTEGER, PARAMETER :: rx = KIND(1.0d0)
+#   define SGLE(x)    (x)
 #else
+#   define SGLE(x)    REAL(x)
   INTEGER, PARAMETER :: rx = KIND(1.0)
 #endif
 

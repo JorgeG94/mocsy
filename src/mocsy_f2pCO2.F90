@@ -4,6 +4,7 @@
 MODULE mocsy_f2pCO2
 
 USE mocsy_singledouble, only : rx, r8, wp
+use mocsy_physical_constants, only: zero_c_in_kelvin, ideal_gas_constant_codata 
 
 IMPLICIT NONE ; PRIVATE
 
@@ -14,12 +15,6 @@ CONTAINS
 SUBROUTINE f2pCO2(fCO2, temp, Patm, p, N, pCO2)
   !    Purpose:
   !    Compute pCO2 from arrays of fCO2, in situ temp, atm pressure, & hydrostatic pressure
-
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
   !> number of records
 !f2py intent(hide) n
@@ -53,10 +48,9 @@ SUBROUTINE f2pCO2(fCO2, temp, Patm, p, N, pCO2)
      dfCO2     = DBLE(fCO2(i))
      dtemp     = DBLE(temp(i))
      dPatm     = DBLE(Patm(i))
-     tk = 273.15d0 + DBLE(temp(i))     !Absolute temperature (Kelvin)
+     tk = zero_c_in_kelvin + DBLE(temp(i))     !Absolute temperature (Kelvin)
      prb = DBLE(p(i)) / 10.0d0         !Pressure effect (prb is in bars)
      Ptot = dPatm + prb/1.01325d0      !Total pressure (atmospheric + hydrostatic) [atm]
-     Rgas_atm = 82.05736_r8            !R in (cm3 * atm) / (mol * K)  from CODATA (2006)
 !    To compute fugcoeff, we need 3 other terms (B, Del, xc2) as well as 3 others above (tk, Ptot, Rgas_atm)
      B = -1636.75d0 + 12.0408d0*tk - 0.0327957d0*(tk*tk) + 0.0000316528d0*(tk*tk*tk)
      Del = 57.7d0 - 0.118d0*tk
@@ -65,7 +59,7 @@ SUBROUTINE f2pCO2(fCO2, temp, Patm, p, N, pCO2)
 !    Let's assume that xCO2 = fCO2. Resulting fugcoeff is identical to 8th digit after the decimal.
      xCO2approx = dfCO2 * 1.e-6_r8
      xc2 = (1.0d0 - xCO2approx)**2 
-     fugcoeff = exp( Ptot*(B + 2.0d0*xc2*Del)/(Rgas_atm*tk) )
+     fugcoeff = exp( Ptot*(B + 2.0d0*xc2*Del)/(ideal_gas_constant_codata*tk) )
      dpCO2 = dfCO2 / fugcoeff
      pCO2(i) = SGLE(dpCO2)
   END DO

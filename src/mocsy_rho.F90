@@ -9,18 +9,18 @@ USE Dual_Num_Auto_Diff
 IMPLICIT NONE ; PRIVATE
 
 PUBLIC rho, rho_DNAD 
+#if USE_PRECISION == 2
+#   define SGLE(x)    (x)
+#else
+#   define SGLE(x)    REAL(x)
+#endif
+
 
 CONTAINS
 !> Function to compute in situ density from salinity (psu), in situ temperature (C), & pressure (bar)
 FUNCTION rho(salt, temp, pbar)
 
   ! Compute in situ density from salinity (psu), in situ temperature (C), & pressure (bar)
-
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
   !> salinity [psu]
   REAL(kind=rx) :: salt

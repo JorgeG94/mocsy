@@ -36,22 +36,11 @@ SUBROUTINE tis(salt, tempot, press, pressref, N, tempis)
   !> in situ temperature [C] 
   REAL(kind=rx), INTENT(out), DIMENSION(N) :: tempis
 
-! REAL(kind=r8) :: dsalt, dtempis, dpress, dpressref
-! REAL(kind=r8) :: dtempot
 
   INTEGER :: i
 
-! REAL(kind=r8) :: sw_temp
-! REAL(kind=rx) :: sw_temp
-! EXTERNAL sw_temp
 
   DO i = 1,N
-    !dsalt     = DBLE(salt(i))
-    !dtempot   = DBLE(tempot(i))
-    !dpress    = DBLE(press(i))
-    !dpressref = DBLE(pressref)
-    !dtempis   = sw_temp(dsalt, dtempot, dpress, dpressref)
-    !tempis(i) = REAL(dtempis)
 
      tempis   = sw_temp(salt(i), tempot(i), press(i), pressref)
   END DO

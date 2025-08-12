@@ -47,8 +47,6 @@ SUBROUTINE tpot(salt, tempis, press, pressref, N, tempot)
 
   INTEGER :: i
 
-! REAL(kind=r8) :: sw_ptmp
-! EXTERNAL sw_ptmp
 
   DO i = 1,N
      dsalt     = DBLE(salt(i))
