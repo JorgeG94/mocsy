@@ -2,28 +2,28 @@
 !! \BRIEF 
 !> Module with contants subroutine - computes carbonate system constants
 !! from S,T,P 
-MODULE mocsy_constants
+module mocsy_constants
 
-USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_p80, only : p80
-USE mocsy_sw_temp, only : sw_temp, sw_temp_DNAD
-USE mocsy_sw_ptmp, only : sw_ptmp, sw_ptmp_DNAD
-USE Dual_Num_Auto_Diff
+use mocsy_singledouble, only : rx, r8, wp
+use mocsy_p80, only : p80
+use mocsy_sw_temp, only : sw_temp, sw_temp_DNAD
+use mocsy_sw_ptmp, only : sw_ptmp, sw_ptmp_DNAD
+use Dual_Num_Auto_Diff
 
-IMPLICIT NONE ; PRIVATE
+implicit none ; private
 
-PUBLIC constants
+public constants
 
 real(r8), parameter, public :: ideal_gas_constant_jkmol = 8.314472_r8 ! [J/(mol*K)]
 real(r8), parameter, public :: R_jkmol_scaled_by_10 = 83.14472_r8 
 real(r8), parameter, public :: ideal_gas_constant_codata = 82.05736_r8 ! [cm^3*atm/(K*mol)]
 real(r8), parameter, public :: co2_partial_molar_volume = 32.3_r8  ! [cm3/mol]
-real(r8), PARAMETER, public :: ZERO_C_IN_KELVIN = 273.15_r8
-real(r8), parameter, public :: BAR_TO_ATM =  1.01325_r8
-real(r8), parameter, public :: FLUORIDE_ATOMIC_MASS = 18.9984_r8! [F-]
-real(r8), parameter, public :: SULFATE_ATOMIC_MASS = 96.062_r8! [SO4-]
-real(r8), parameter, public :: BORON_ATOMIC_MASS = 10.811_r8 ! [B]
-real(r8), parameter, public :: KNUDSEN_CHLORINITY_CONSTANT = 1.80655_r8 ! based on Knudsen's formula 
+real(r8), parameter, public :: zero_c_in_kelvin = 273.15_r8
+real(r8), parameter, public :: bar_to_atm =  1.01325_r8
+real(r8), parameter, public :: fluoride_atomic_mass = 18.9984_r8! [F-]
+real(r8), parameter, public :: sulfate_atomic_mass = 96.062_r8! [SO4-]
+real(r8), parameter, public :: boron_atomic_mass = 10.811_r8 ! [B]
+real(r8), parameter, public :: knudsen_chlorinity_constant = 1.80655_r8 ! based on Knudsen's formula 
 
   ! CONSTANTS
   ! =========
@@ -34,34 +34,34 @@ real(r8), parameter, public :: KNUDSEN_CHLORINITY_CONSTANT = 1.80655_r8 ! based 
   !            9) K1P, 10) K2P, 11) K3P, 12) Ksi
 
 
-REAL(r8), PARAMETER :: a0(12) = [-25.5_r8, -15.82_r8, -29.48_r8, -20.02_r8, &
+real(r8), parameter :: a0(12) = [-25.5_r8, -15.82_r8, -29.48_r8, -20.02_r8, &
                                  -18.03_r8,  -9.78_r8, -48.76_r8, -45.96_r8, &
                                  -14.51_r8, -23.12_r8, -26.57_r8, -29.48_r8]
 
-REAL(r8), PARAMETER :: a1(12) = [0.1271_r8, -0.0219_r8, 0.1622_r8, 0.1119_r8, &
+real(r8), parameter :: a1(12) = [0.1271_r8, -0.0219_r8, 0.1622_r8, 0.1119_r8, &
                                  0.0466_r8, -0.0090_r8, 0.5304_r8, 0.5304_r8, &
                                  0.1211_r8, 0.1758_r8, 0.2020_r8, 0.1622_r8]
 
-REAL(r8), PARAMETER :: a2(12) = [0.0_r8, 0.0_r8, -2.608e-3_r8, -1.409e-3_r8, &
+real(r8), parameter :: a2(12) = [0.0_r8, 0.0_r8, -2.608e-3_r8, -1.409e-3_r8, &
                                  0.316e-3_r8, -0.942e-3_r8, 0.0_r8, 0.0_r8, &
                                  -0.321e-3_r8, -2.647e-3_r8, -3.042e-3_r8, -2.6080e-3_r8]
 
-REAL(r8), PARAMETER :: b0(12) = [-3.08e-3_r8, 1.13e-3_r8, -2.84e-3_r8, -5.13e-3_r8, &
+real(r8), parameter :: b0(12) = [-3.08e-3_r8, 1.13e-3_r8, -2.84e-3_r8, -5.13e-3_r8, &
                                  -4.53e-3_r8, -3.91e-3_r8, -11.76e-3_r8, -11.76e-3_r8, &
                                  -2.67e-3_r8, -5.15e-3_r8, -4.08e-3_r8, -2.84e-3_r8]
 
-REAL(r8), PARAMETER :: b1(12) = [0.0877e-3_r8, -0.1475e-3_r8, 0.0_r8, 0.0794e-3_r8, &
+real(r8), parameter :: b1(12) = [0.0877e-3_r8, -0.1475e-3_r8, 0.0_r8, 0.0794e-3_r8, &
                                  0.09e-3_r8, 0.054e-3_r8, 0.3692e-3_r8, 0.3692e-3_r8, &
                                  0.0427e-3_r8, 0.09e-3_r8, 0.0714e-3_r8, 0.0_r8]
 
-REAL(r8), PARAMETER :: b2(12) = 0.0_r8  ! All elements set to 0.0
+real(r8), parameter :: b2(12) = 0.0_r8  ! All elements set to 0.0
 
 
 
-CONTAINS
+contains
 !> Compute thermodynamic constants
 !! FROM temperature, salinity, and pressure (1D arrays)
-SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
+subroutine constants(k0, k1, k2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
                      K1p, K2p, K3p, Ksi,                      &
                      St, Ft, Bt,                              &
                      temp, sal, Patm,                         &
@@ -139,139 +139,139 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 ! Input variables
   !>     number of records
 !f2py intent(hide) number_of_records
-  INTEGER, INTENT(in) :: number_of_records
+  integer, intent(in) :: number_of_records
   !> in <b>situ temperature</b> (when optT='Tinsitu', typical data) 
   !! OR <b>potential temperature</b> (when optT='Tpot', typical models) [degree C]
-  REAL(kind=rx), INTENT(in),    DIMENSION(number_of_records) :: temp
+  real(kind=rx), intent(in),    dimension(number_of_records) :: temp
   !> depth in <b>meters</b> (when optP='m') or <b>decibars</b> (when optP='db')
-  REAL(kind=rx), INTENT(in),    DIMENSION(number_of_records) :: depth
+  real(kind=rx), intent(in),    dimension(number_of_records) :: depth
   !> latitude <b>[degrees north]</b>
-  REAL(kind=rx), INTENT(in),    DIMENSION(number_of_records) :: lat
+  real(kind=rx), intent(in),    dimension(number_of_records) :: lat
   !> salinity <b>[psu]</b>
-  REAL(kind=rx), INTENT(in), DIMENSION(number_of_records) :: sal
+  real(kind=rx), intent(in), dimension(number_of_records) :: sal
 
   !> atmospheric pressure <b>[atm]</b>
-  REAL(kind=rx), INTENT(in), DIMENSION(number_of_records) :: Patm
+  real(kind=rx), intent(in), dimension(number_of_records) :: Patm
 
   !> for temp input, choose \b 'Tinsitu' for in situ Temp or 
   !! \b 'Tpot' for potential temperature (in situ Temp is computed, needed for models)
-  CHARACTER(7), INTENT(in) :: optT
+  character(7), intent(in) :: optT
   !> for depth input, choose \b "db" for decibars (in situ pressure) or \b "m" for meters (pressure is computed, needed for models)
-  CHARACTER(2), INTENT(in) :: optP
+  character(2), intent(in) :: optP
   !> for total boron, choose either \b 'u74' (Uppstrom, 1974) or \b 'l10' (Lee et al., 2010).
   !! The 'l10' formulation is based on 139 measurements (instead of 20),
   !! uses a more accurate method, and
   !! generally increases total boron in seawater by 4% 
 !f2py character*3 optional, intent(in) :: optB='l10'
-  CHARACTER(3), OPTIONAL, INTENT(in) :: optB
+  character(3), optional, intent(in) :: optB
   !> for Kf, choose either \b 'pf' (Perez & Fraga, 1987) or \b 'dg' (Dickson & Riley, 1979)
 !f2py character*2 optional, intent(in) :: optKf='pf'
-  CHARACTER(2), OPTIONAL, INTENT(in) :: optKf
+  character(2), optional, intent(in) :: optKf
   !> for K1,K2 choose either \b 'l' (Lueker et al., 2000) or \b 'm10' (Millero, 2010) or \b 'w14' (Waters et al., 2014)
 !f2py character*3 optional, intent(in) :: optK1K2='l'
-  CHARACTER(3), OPTIONAL, INTENT(in) :: optK1K2
+  character(3), optional, intent(in) :: optK1K2
   !> for K0,fugacity coefficient choose either \b 'Ppot' (no pressure correction) or \b 'Pinsitu' (with pressure correction) 
   !! 'Ppot'    - for 'potential' fCO2 and pCO2 (water parcel brought adiabatically to the surface)
   !! 'Pinsitu' - for 'in situ' values of fCO2 and pCO2, accounting for pressure on K0 and Cf
   !! with 'Pinsitu' the fCO2 and pCO2 will be many times higher in the deep ocean
 !f2py character*7 optional, intent(in) :: optGAS='Pinsitu'
-  CHARACTER(7), OPTIONAL, INTENT(in) :: optGAS
+  character(7), optional, intent(in) :: optGAS
 
 
 ! Ouput variables
   !> solubility of CO2 in seawater (Weiss, 1974), also known as K0
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: K0
+  real(kind=r8), intent(out), dimension(number_of_records) :: k0
   !> K1 for the dissociation of carbonic acid from Lueker et al. (2000) or Millero (2010), depending on optK1K2
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: K1
+  real(kind=r8), intent(out), dimension(number_of_records) :: k1
   !> K2 for the dissociation of carbonic acid from Lueker et al. (2000) or Millero (2010), depending on optK1K2
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: K2
+  real(kind=r8), intent(out), dimension(number_of_records) :: k2
   !> equilibrium constant for dissociation of boric acid
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Kb
+  real(kind=r8), intent(out), dimension(number_of_records) :: Kb
   !> equilibrium constant for the dissociation of water (Millero, 1995)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Kw
+  real(kind=r8), intent(out), dimension(number_of_records) :: Kw
   !> equilibrium constant for the dissociation of bisulfate (Dickson, 1990)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Ks
+  real(kind=r8), intent(out), dimension(number_of_records) :: Ks
   !> equilibrium constant for the dissociation of hydrogen fluoride 
   !! either from Dickson and Riley (1979) or from Perez and Fraga (1987), depending on optKf
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Kf
+  real(kind=r8), intent(out), dimension(number_of_records) :: Kf
   !> solubility product for calcite (Mucci, 1983)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Kspc
+  real(kind=r8), intent(out), dimension(number_of_records) :: Kspc
   !> solubility product for aragonite (Mucci, 1983)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Kspa
+  real(kind=r8), intent(out), dimension(number_of_records) :: Kspa
   !> 1st dissociation constant for phosphoric acid (Millero, 1995)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: K1p
+  real(kind=r8), intent(out), dimension(number_of_records) :: K1p
   !> 2nd dissociation constant for phosphoric acid (Millero, 1995)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: K2p
+  real(kind=r8), intent(out), dimension(number_of_records) :: K2p
   !> 3rd dissociation constant for phosphoric acid (Millero, 1995)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: K3p
+  real(kind=r8), intent(out), dimension(number_of_records) :: K3p
   !> equilibrium constant for the dissociation of silicic acid (Millero, 1995)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Ksi
+  real(kind=r8), intent(out), dimension(number_of_records) :: Ksi
   !> total sulfate (Morris & Riley, 1966)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: St
+  real(kind=r8), intent(out), dimension(number_of_records) :: St
   !> total fluoride  (Riley, 1965)
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Ft
+  real(kind=r8), intent(out), dimension(number_of_records) :: Ft
   !> total boron
   !! from either Uppstrom (1974) or Lee et al. (2010), depending on optB
-  REAL(kind=r8), INTENT(out), DIMENSION(number_of_records) :: Bt
+  real(kind=r8), intent(out), dimension(number_of_records) :: Bt
 
 ! Local variables
-  REAL(kind=rx) :: ssal
-  REAL(kind=rx) :: p
-  REAL(kind=rx) :: tempot, tempis68, tempot68
-  REAL(kind=rx) :: tempis
-  REAL(kind=r8) :: ionic_strength
+  real(kind=rx) :: ssal
+  real(kind=rx) :: p
+  real(kind=rx) :: tempot, tempis68, tempot68
+  real(kind=rx) :: tempis
+  real(kind=r8) :: ionic_strength
   !real(kind=r8) is2,  sqrtis
-  REAL(kind=r8) :: Ks_0p, Kf_0p
-  REAL(kind=r8) :: total2free, free2SWS, total2SWS, SWS2total
-  REAL(kind=r8) :: total2free_0p, free2SWS_0p, total2SWS_0p
+  real(kind=r8) :: Ks_0p, Kf_0p
+  real(kind=r8) :: total2free, free2SWS, total2SWS, SWS2total
+  real(kind=r8) :: total2free_0p, free2SWS_0p, total2SWS_0p
 ! REAL(kind=r8) :: free2SWS, free2SWS_0p
 
-  REAL(kind=r8) :: dtempot, dtempot68
+  real(kind=r8) :: dtempot, dtempot68
 
 
   !REAL(kind=r8), DIMENSION(12) :: a0, a1, a2, b0, b1, b2
-  REAL(kind=r8), DIMENSION(12) :: lnkpok0
+  real(kind=r8), dimension(12) :: lnkpok0
 
-  INTEGER :: i, icount
+  integer :: i, icount
 
   real(kind=r8) :: temperature, temperature_kelvin, inverse_temperature_kelvin, log_temperature_kelvin, tk0
   !REAL(kind=r8) :: sqrts, s15, s2
-  REAL(kind=r8) :: salinity, scl
+  real(kind=r8) :: salinity, scl
 
   real(kind=r8) :: atmospheric_pressure, hydrostatic_pressure, total_pressure
 ! Arrays to pass optional arguments into or use defaults (Dickson et al., 2007)
-  CHARACTER(3) :: opB
-  CHARACTER(2) :: opKf
-  CHARACTER(3) :: opK1K2
-  CHARACTER(7) :: opGAS
+  character(3) :: opB
+  character(2) :: opKf
+  character(3) :: opK1K2
+  character(7) :: opGAS
 
 
 ! Set defaults for optional arguments (in Fortran 90)
 ! Note:  Optional arguments with f2py (python) are set above with 
 !        the !f2py statements that precede each type declaraion
-  IF (PRESENT(optB)) THEN
+  if (present(optB)) then
     opB = optB
-  ELSE
+  else
     opB = 'l10'
-  ENDIF
-  IF (PRESENT(optKf)) THEN
+  endif
+  if (present(optKf)) then
     opKf = optKf
-  ELSE
+  else
     opKf = 'pf'
-  ENDIF
-  IF (PRESENT(optK1K2)) THEN
+  endif
+  if (present(optK1K2)) then
     opK1K2 = optK1K2
-  ELSE
+  else
     opK1K2 = 'l'
-  ENDIF
-  IF (PRESENT(optGAS)) THEN
+  endif
+  if (present(optGAS)) then
     opGAS = optGAS
-  ELSE
+  else
     opGAS = 'Pinsitu'
-  ENDIF
+  endif
 
   icount = 0
-  DO i = 1, number_of_records
+  do i = 1, number_of_records
      icount = icount + 1
 !    ===============================================================
 !    Convert model depth -> press; convert model Theta -> T in situ
@@ -285,19 +285,19 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !     - potential temperature (C) => convert to in-situ T (C)
 !    -------------------------------------------------------
 !    1)  Compute pressure [db] from depth [m] and latitude [degrees] (if input is m, for models)
-     IF (trim(optP) == 'm' ) THEN
+     if (trim(optP) == 'm' ) then
 !       Compute pressure [db] from depth [m] and latitude [degrees]
         p = p80(depth(i), lat(i))
-     ELSEIF (trim(optP) == 'db' ) THEN
+     elseif (trim(optP) == 'db' ) then
 !       In this case (where optP = 'db'), p is input & output (no depth->pressure conversion needed)
         p = depth(i)
-     ELSE
-        PRINT *,"optP must be 'm' or 'db'"
-        STOP
-     ENDIF
+     else
+        print *,"optP must be 'm' or 'db'"
+        stop
+     endif
 
 !    2) Convert potential T to in-situ T (if input is Tpot, i.e. case for models):
-     IF (trim(optT) == 'Tpot' .OR. trim(optT) == 'tpot') THEN
+     if (trim(optT) == 'Tpot' .or. trim(optT) == 'tpot') then
         tempot = temp(i)
 !       This is the case for most models and some data
 !       a) Convert the pot. temp on today's "ITS 90" scale to older IPTS 68 scale
@@ -309,47 +309,47 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
         tempis = 0.99975_rx*tempis68 + 0.0002_rx
 !       Note: parts (a) and (c) above are tiny corrections;
 !             part  (b) is a big correction for deep waters (but zero at surface)
-     ELSEIF (trim(optT) == 'Tinsitu' .OR. trim(optT) == 'tinsitu') THEN
+     elseif (trim(optT) == 'Tinsitu' .or. trim(optT) == 'tinsitu') then
 !       When optT = 'Tinsitu', tempis is input & output (no tempot needed)
         tempis    = temp(i)
         tempis68  = (temp(i) - 0.0002_rx) / 0.99975_rx
-        dtempot68 = sw_ptmp(DBLE(sal(i)), DBLE(tempis68), DBLE(p), 0.0d0)
+        dtempot68 = sw_ptmp(dble(sal(i)), dble(tempis68), dble(p), 0.0d0)
         dtempot   = 0.99975_rx*dtempot68 + 0.0002_rx
-     ELSE
-        PRINT *,"optT must be either 'Tpot' or 'Tinsitu'"
-        PRINT *,"you specified optT =", trim(optT) 
-        STOP
-     ENDIF
+     else
+        print *,"optT must be either 'Tpot' or 'Tinsitu'"
+        print *,"you specified optT =", trim(optT) 
+        stop
+     endif
 
 !    Compute constants:
-     IF (temp(i) >= -5.0_rx .AND. temp(i) < 1.0e+2_rx) THEN
+     if (temp(i) >= -5.0_rx .and. temp(i) < 1.0e+2_rx) then
 !       Test to indicate if any of input variables are unreasonable
-        IF (sal(i) < 0.  .OR.  sal(i) > 1e+3) THEN
-           PRINT *, 'i, icount, temp, sal =', i, icount, temp(i), sal(i)
-        ENDIF
+        if (sal(i) < 0.  .or.  sal(i) > 1e+3) then
+           print *, 'i, icount, temp, sal =', i, icount, temp(i), sal(i)
+        endif
 !       Zero out negative salinity (prev case for OCMIP2 model w/ slightly negative S in some coastal cells)
-        IF (sal(i) < 0.0) THEN
+        if (sal(i) < 0.0) then
            ssal = 0.0
-        ELSE
+        else
            ssal = sal(i)
-        ENDIF
+        endif
 
 !       Absolute temperature (Kelvin) and related values
-        temperature = DBLE(tempis)
-        temperature_kelvin = ZERO_C_IN_KELVIN + temperature
+        temperature = dble(tempis)
+        temperature_kelvin = zero_c_in_kelvin + temperature
         inverse_temperature_kelvin=1.0d0/temperature_kelvin
-        log_temperature_kelvin = LOG(temperature_kelvin)
+        log_temperature_kelvin = log(temperature_kelvin)
 
 !       Atmospheric pressure
-        atmospheric_pressure = DBLE(Patm(i))
+        atmospheric_pressure = dble(Patm(i))
 
 !       Hydrostatic pressure (prb is in bars)
-        hydrostatic_pressure = DBLE(p) / 10.0d0
+        hydrostatic_pressure = dble(p) / 10.0d0
 
 !       Salinity and simply related values
-        salinity = DBLE(ssal)
+        salinity = dble(ssal)
 
-        scl=salinity/KNUDSEN_CHLORINITY_CONSTANT
+        scl=salinity/knudsen_chlorinity_constant
 
 !       Ionic strength:
         ! more magic numbers
@@ -359,23 +359,23 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 
 !       Sulfate: Morris & Riley (1966)
         ! TODO, find reference
-        St(i) = 0.14d0 * scl/SULFATE_ATOMIC_MASS
+        St(i) = 0.14d0 * scl/sulfate_atomic_mass
 
 !       Fluoride:  Riley (1965)
         ! atomic mass fluoride 
-        Ft(i) = 0.000067d0 * scl/FLUORIDE_ATOMIC_MASS
+        Ft(i) = 0.000067d0 * scl/fluoride_atomic_mass
 
 !       Boron:
-        IF (trim(opB) == 'l10') THEN
+        if (trim(opB) == 'l10') then
 !          New formulation from Lee et al (2010)
-           Bt(i) = 0.0002414d0 * scl/BORON_ATOMIC_MASS
-        ELSEIF (trim(opB) == 'u74') THEN
+           Bt(i) = 0.0002414d0 * scl/boron_atomic_mass
+        elseif (trim(opB) == 'u74') then
 !          Classic formulation from Uppström (1974)
-           Bt(i) = 0.000232d0  * scl/BORON_ATOMIC_MASS
-        ELSE
-           PRINT *,"optB must be 'l10' or 'u74'"
-           STOP
-        ENDIF
+           Bt(i) = 0.000232d0  * scl/boron_atomic_mass
+        else
+           print *,"optB must be 'l10' or 'u74'"
+           stop
+        endif
 
 !       K0 (K Henry)
 !       CO2(g) <-> CO2(aq.)
@@ -385,7 +385,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 
         tk0 = calculate_tk0(opgas, temperature_kelvin, dtempot)
 
-        K0(i) = calculate_k0(tk0, salinity)
+        k0(i) = calculate_k0(tk0, salinity)
 
 !       K1 = [H][HCO3]/[H2CO3]
 !       K2 = [H][CO3]/[HCO3]
@@ -466,10 +466,10 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
         call calculate_all_pressure_correction_factors(temperature, hydrostatic_pressure, temperature_kelvin, lnkpok0)
 
 !       Pressure effect on K0 based on Weiss (1974, equation 5)
-        K0(i) = K0(i) * exp( ((1-total_pressure)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   
+        k0(i) = k0(i) * exp( ((1-total_pressure)*co2_partial_molar_volume)/(ideal_gas_constant_codata*tk0) )   
 
 !       Pressure correction on Ks (Free scale)
-        Ks(i) = Ks_0p*EXP(lnkpok0(5))
+        Ks(i) = Ks_0p*exp(lnkpok0(5))
 !       Conversion factor total -> free scale
         total2free     = 1.d0/(1.d0 + St(i)/Ks(i))   ! Kfree = Ktotal*total2free
 !       Conversion factor total -> free scale at pressure zero
@@ -478,7 +478,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Pressure correction on Kf
 !       Kf must be on FREE scale before correction
         Kf_0p = Kf_0p * total2free_0p   !Convert from Total to Free scale (pressure 0)
-        Kf(i) = Kf_0p * EXP(lnkpok0(6)) !Pressure correction (on Free scale)
+        Kf(i) = Kf_0p * exp(lnkpok0(6)) !Pressure correction (on Free scale)
         Kf(i) = Kf(i)/total2free        !Convert back from Free to Total scale
 
 !       Convert between seawater and total hydrogen (pH) scales
@@ -492,12 +492,12 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 
 !       Convert from Total to Seawater scale before pressure correction
 !       Must change to SEAWATER scale: K1, K2, Kb
-        IF (trim(optK1K2) == 'l') THEN
-          K1(i)  = K1(i)*total2SWS_0p
-          K2(i)  = K2(i)*total2SWS_0p
+        if (trim(optK1K2) == 'l') then
+          k1(i)  = k1(i)*total2SWS_0p
+          k2(i)  = k2(i)*total2SWS_0p
           !This conversion is unnecessary for the K1,K2 from Millero (2010),
           !since we use here the formulation already on the seawater scale
-        ENDIF
+        endif
         Kb(i)  = Kb(i)*total2SWS_0p
 
 !       Already on SEAWATER scale: K1p, K2p, K3p, Kb, Ksi, Kw
@@ -509,20 +509,20 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !          - Kspc, Kspa (independent of pH scale; pressure-corrected below)
 
 !       Perform actual pressure correction (on seawater scale)
-        K1(i)   = K1(i)*EXP(lnkpok0(1))
-        K2(i)   = K2(i)*EXP(lnkpok0(2))
-        Kb(i)   = Kb(i)*EXP(lnkpok0(3))
-        Kw(i)   = Kw(i)*EXP(lnkpok0(4))
-        Kspc(i) = Kspc(i)*EXP(lnkpok0(7))
-        Kspa(i) = Kspa(i)*EXP(lnkpok0(8))
-        K1p(i)  = K1p(i)*EXP(lnkpok0(9))
-        K2p(i)  = K2p(i)*EXP(lnkpok0(10))
-        K3p(i)  = K3p(i)*EXP(lnkpok0(11))
-        Ksi(i)  = Ksi(i)*EXP(lnkpok0(12))
+        k1(i)   = k1(i)*exp(lnkpok0(1))
+        k2(i)   = k2(i)*exp(lnkpok0(2))
+        Kb(i)   = Kb(i)*exp(lnkpok0(3))
+        Kw(i)   = Kw(i)*exp(lnkpok0(4))
+        Kspc(i) = Kspc(i)*exp(lnkpok0(7))
+        Kspa(i) = Kspa(i)*exp(lnkpok0(8))
+        K1p(i)  = K1p(i)*exp(lnkpok0(9))
+        K2p(i)  = K2p(i)*exp(lnkpok0(10))
+        K3p(i)  = K3p(i)*exp(lnkpok0(11))
+        Ksi(i)  = Ksi(i)*exp(lnkpok0(12))
 
 !       Convert back to original total scale:
-        K1(i)  = K1(i) *SWS2total
-        K2(i)  = K2(i) *SWS2total
+        k1(i)  = k1(i) *SWS2total
+        k2(i)  = k2(i) *SWS2total
         K1p(i) = K1p(i)*SWS2total
         K2p(i) = K2p(i)*SWS2total
         K3p(i) = K3p(i)*SWS2total
@@ -530,11 +530,11 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
         Ksi(i) = Ksi(i)*SWS2total
         Kw(i)  = Kw(i) *SWS2total
 
-     ELSE
+     else
 
-        K0(i)   = huge(r8)
-        K1(i)   = huge(r8)
-        K2(i)   = huge(r8)
+        k0(i)   = huge(r8)
+        k1(i)   = huge(r8)
+        k2(i)   = huge(r8)
         Kb(i)   = huge(r8)
         Kw(i)   = huge(r8)
         Ks(i)   = huge(r8)
@@ -550,12 +550,12 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
         St(i)   = huge(r8)
 
 
-     ENDIF
+     endif
 
-  END DO
+  end do
 
-  RETURN
-END SUBROUTINE constants
+  return
+end subroutine constants
 
 function calculate_tk0(op_gas, tk, dtempot) result(tk0_value)
     ! Arguments
@@ -646,7 +646,7 @@ function calculate_k1(op_k1k2, invtk, dlogtk, s) result(k1_value)
     real(r8) :: pk1o, ma1, mb1, mc1, pk1
 
     s2 = s*s 
-    sqrts = SQRT(s)
+    sqrts = sqrt(s)
     
     select case (trim(op_k1k2))
     case ('l')
@@ -695,7 +695,7 @@ function calculate_k2(op_k1k2, invtk, dlogtk, s) result(k2_value)
     real(r8) :: pk2o, ma2, mb2, mc2, pk2
 
     s2 = s*s 
-    sqrts = SQRT(s)
+    sqrts = sqrt(s)
     
     select case (trim(op_k1k2))
     case ('l')
@@ -778,7 +778,7 @@ function calculate_k2p(invtk, dlogtk, s) result(k2p_value)
     ! Result
     real(r8) :: k2p_value
 
-    sqrts = SQRT(s)
+    sqrts = sqrt(s)
     ! K2p = [H][HPO4]/[H2PO4] (seawater scale)
     ! DOE(1994) eq 7.2.23 with footnote using data from Millero (1974)
     k2p_value = exp(-8814.715_r8*invtk + 172.1033_r8 - 27.927_r8*dlogtk + &
@@ -962,4 +962,4 @@ end subroutine calculate_all_pressure_correction_factors
 
 
 
-END MODULE mocsy_constants
+end module mocsy_constants
