@@ -15,7 +15,7 @@ USE Dual_Num_Auto_Diff
 IMPLICIT NONE ; PRIVATE
 
 PUBLIC constants_DNAD
-
+!! TODO: refactor into using an overloaded interface for the equilirium constants from the refactored version
 
   ! CONSTANTS
   ! =========
