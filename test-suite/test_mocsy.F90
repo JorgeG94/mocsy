@@ -23,7 +23,8 @@ subroutine collect_mocsy_suite(testsuite)
     new_unittest("derivnum", test_derivnum), &
     new_unittest("errors", test_errors), &
     new_unittest("kprime", test_kprime), &
-    new_unittest("phizero", test_phizero) &
+    new_unittest("phizero", test_phizero), &
+    new_unittest("buffesm", test_buffesm) &
   ]
 
 end subroutine collect_mocsy_suite
@@ -778,5 +779,189 @@ subroutine test_phizero(error)
 
 end subroutine test_phizero
 
+
+subroutine test_buffesm(error)
+    use mocsy_buffesm
+    type(error_type), allocatable, intent(out) :: error
+
+    ! Parameter arrays for output variable correctness checking
+real(r8), parameter :: ph_ref(6) = [ &
+    8.065774361276_r8, 8.025851077783_r8, 7.985881831551_r8, &
+    7.945878996737_r8, 7.905855294833_r8, 7.865823710589_r8 ]
+
+real(r8), parameter :: pco2_ref(6) = [ &
+    369.027507401863_r8, 637.882784234534_r8, 1104.109068274922_r8, &
+    1913.637800425156_r8, 3321.019885284770_r8, 5770.775448321036_r8 ]
+
+real(r8), parameter :: fco2_ref(6) = [ &
+    367.448413463302_r8, 415.986048218755_r8, 471.576625088658_r8, &
+    535.308681950995_r8, 608.445696813835_r8, 692.455073657361_r8 ]
+
+real(r8), parameter :: co2_ref(6) = [ &
+    0.000021394132_r8, 0.000021030991_r8, 0.000020702172_r8, &
+    0.000020405659_r8, 0.000020139600_r8, 0.000019902301_r8 ]
+
+real(r8), parameter :: hco3_ref(6) = [ &
+    0.002027862177_r8, 0.002030361926_r8, 0.002032766036_r8, &
+    0.002035075500_r8, 0.002037291235_r8, 0.002039414101_r8 ]
+
+real(r8), parameter :: co3_ref(6) = [ &
+    0.000104743889_r8, 0.000102607276_r8, 0.000100531980_r8, &
+    0.000098519025_r8, 0.000096569346_r8, 0.000094683775_r8 ]
+
+real(r8), parameter :: OmegaA_ref(6) = [ &
+    1.577496332906_r8, 1.273001233594_r8, 1.032424280379_r8, &
+    0.841530169436_r8, 0.689408747139_r8, 0.567666525488_r8 ]
+
+real(r8), parameter :: OmegaC_ref(6) = [ &
+    2.506275274586_r8, 1.997900285257_r8, 1.600618260301_r8, &
+    1.288794935890_r8, 1.042978829258_r8, 0.848352925850_r8 ]
+
+real(r8), parameter :: BetaD_ref(6) = [ &
+    14.421651930031_r8, 14.485581243375_r8, 14.546107000371_r8, &
+    14.603364486957_r8, 14.657466609243_r8, 14.708505263381_r8 ]
+
+real(r8), parameter :: rhoSW_ref(6) = [ &
+    1027.971751476259_r8, 1032.629068336757_r8, 1037.187278732428_r8, &
+    1041.649029072363_r8, 1046.016875562734_r8, 1050.293287986511_r8 ]
+
+real(r8), parameter :: p_ref(6) = [ &
+    0.000000000000_r8, 1000.000000000000_r8, 2000.000000000000_r8, &
+    3000.000000000000_r8, 4000.000000000000_r8, 5000.000000000000_r8 ]
+
+real(r8), parameter :: tempis_ref(6) = [ &
+    2.000000000000_r8, 2.000000000000_r8, 2.000000000000_r8, &
+    2.000000000000_r8, 2.000000000000_r8, 2.000000000000_r8 ]
+
+real(r8), parameter :: gammaDIC_ref(6) = [ &
+    0.000149308731_r8, 0.000148673241_r8, 0.000148077249_r8, &
+    0.000147518588_r8, 0.000146995414_r8, 0.000146506174_r8 ]
+
+real(r8), parameter :: gammaAlk_ref(6) = [ &
+    -0.000166637063_r8, -0.000165743753_r8, -0.000164901357_r8, &
+    -0.000164107287_r8, -0.000163359344_r8, -0.000162655671_r8 ]
+
+real(r8), parameter :: betaDIC_ref(6) = [ &
+    0.000166637063_r8, 0.000165743753_r8, 0.000164901357_r8, &
+    0.000164107287_r8, 0.000163359344_r8, 0.000162655671_r8 ]
+
+real(r8), parameter :: betaAlk_ref(6) = [ &
+    -0.000173085147_r8, -0.000172020807_r8, -0.000171012804_r8, &
+    -0.000170058534_r8, -0.000169155781_r8, -0.000168302673_r8 ]
+
+real(r8), parameter :: omegaDIC_ref(6) = [ &
+    -0.000188515847_r8, -0.000187242983_r8, -0.000186038705_r8, &
+    -0.000184899716_r8, -0.000183823198_r8, -0.000182806760_r8 ]
+
+real(r8), parameter :: omegaAlk_ref(6) = [ &
+    0.000180052529_r8, 0.000178792203_r8, 0.000177594849_r8, &
+    0.000176457819_r8, 0.000175378850_r8, 0.000174356023_r8 ]
+
+
+!  For vars routine (called below)
+!  "vars" Output variables:g
+   REAL(kind=rx), DIMENSION(6) :: ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC, BetaD, rhoSW, p, tempis
+!  "vars" Input variables
+   INTEGER :: N
+   REAL(kind=rx), DIMENSION(6) :: temp, sal, alk, dic, sil, phos, Patm, depth, lat
+   REAL(kind=rx), DIMENSION(6)::  gammaDIC, gammaAlk, betaDIC, betaAlk, omegaDIC, omegaAlk, Rf
+!  "vars" Input options
+   CHARACTER(10) :: optCON, optT, optP, optB, optKf, optK1K2, optGAS
+!  CHARACTER(7) :: optGAS
+
+!  Local variables:
+   INTEGER :: i
+
+
+!> Typical options for observations
+   optCON  = 'mol/kg'  ! input concentrations are in MOL/KG
+   optT    = 'Tinsitu' ! input temperature, variable 'temp' is actually IN SITU temp [°C]
+   optP    = 'db'      ! input variable 'depth' is in 'DECIBARS'
+   optB    = 'l10'
+   optK1K2 = 'l'
+   optKf   = 'dg'
+   optGAS  = 'Pinsitu'
+!> Simple input data (with CONCENTRATION units typical for DATA)
+!> (based on observed average surface concentrations from S. Ocean (south of 60°S)--GLODAP and WOA2009)
+   DO i = 1,6
+     temp(i)   = 2.0            !Can be "Potential temperature" or "In situ temperature" (see optT below)
+     sal(i)    = 35.0           !Salinity (practical scale)
+     alk(i)    = 2295.*1.e-6      ! Convert obs. S. Ocean ave surf ALK (umol/kg) to mocsy data units (mol/kg)
+     dic(i)    = 2154.*1.e-6      ! Convert obs. S. Ocean ave surf DIC (umol/kg) to mocsy data units (mol/kg)
+     sil(i)    = 0.
+     phos(i)   = 0.
+     depth(i) = real(i-1) * 1000. ! Vary depth from 0 to 5000 db by 1000 db
+     Patm(i)   = 1.0            !Atmospheric pressure (atm)
+     N = i
+   END DO
+
+   call vars(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC, BetaD, rhoSW, p, tempis,         &  ! OUTPUT
+             temp, sal, alk, dic, sil, phos, Patm, depth, lat, N,                             &  ! INPUT
+             optCON='mol/kg', optT='Tinsitu', optP='db', optB='l10', optK1K2=optK1K2,         &  ! OPTIONS
+             optKf='dg', optGAS=optGAS)                                                          
+
+   call buffesm(gammaDIC, betaDIC, omegaDIC, gammaALK, betaALK, omegaALK, Rf,                    &  ! OUTPUT
+             temp, sal, alk, dic, sil, phos, Patm, depth, lat, N,                                 &  ! INPUT
+             optCON='mol/kg', optT='Tinsitu', optP='db', optB='l10', optK1K2=optK1K2,             &  ! OPTIONS
+             optKf='dg', optGAS=optGAS)     
+
+   call check(error, all(is_equal(ph, ph_ref)), .true., "ph does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(pco2, pco2_ref)), .true., "pCO2 does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(fco2, fco2_ref)), .true., "fCO2 does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(co2, co2_ref)), .true., "CO2 does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(hco3, hco3_ref)), .true., "HCO3 does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(co3, co3_ref)), .true., "CO3 does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(OmegaA, OmegaA_ref)), .true., "OmegaA does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(OmegaC, OmegaC_ref)), .true., "OmegaC does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(BetaD, BetaD_ref)), .true., "BetaD does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(rhoSW, rhoSW_ref)), .true., "rhoSW does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(p, p_ref)), .true., "p does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(tempis, tempis_ref)), .true., "tempis does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(gammaDIC, gammaDIC_ref)), .true., "gammaDIC does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(gammaALK, gammaALK_ref)), .true., "gammaALK does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(betaDIC, betaDIC_ref)), .true., "betaDIC does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(omegaDIC, omegaDIC_ref)), .true., "omegaDIC does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(gammaALK, gammaALK_ref)), .true., "gammaALK does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(betaALK, betaALK_ref)), .true., "betaALK does not match!")
+   if(allocated(error)) return
+
+   call check(error, all(is_equal(omegaALK, omegaALK_ref)), .true., "omegaALK does not match!")
+   if(allocated(error)) return
+
+end subroutine test_buffesm
 
 end module test_mocsy
