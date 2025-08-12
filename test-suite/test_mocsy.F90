@@ -5,7 +5,7 @@ module test_mocsy
    USE mocsy_constants
    USE mocsy_vars
    USE mocsy_derivauto
-   use pic_test_helpers, only: is_equal
+   use mocsy_test_helpers, only: is_equal
   implicit none 
 
   public :: collect_mocsy_suite

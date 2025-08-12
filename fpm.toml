@@ -31,7 +31,6 @@ source-form = "free"
 
 [dependencies]
 test-drive.git = "https://github.com/fortran-lang/test-drive"
-pic = { git = "https://github.com/JorgeG94/pic.git", branch = "main"}
 [extra.fortitude.check]
 select = ["C", "E", "S"]
 ignore = ["C003"]
