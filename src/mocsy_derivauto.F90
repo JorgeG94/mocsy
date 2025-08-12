@@ -3,12 +3,13 @@
 !> Module with derivauto subroutine - compute partial derivatives of carbonate system vars from DIC,Alk,T,S,P,nuts
 MODULE mocsy_derivauto
 
-USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_constants, only : constants, constants_DNAD
+USE mocsy_singledouble, only : rx, r8, wp, sgle
+USE mocsy_constants, only : constants
+use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_p80, only : p80
-USE mocsy_rho, only : rho, rho_DNAD
-USE mocsy_sw_temp, only : sw_temp, sw_temp_DNAD
-USE mocsy_varsolver, only : varsolver, varsolver_DNAD
+USE mocsy_rho, only : rho
+USE mocsy_sw_temp, only : compute_sea_water_insitu_temperature
+USE mocsy_varsolver, only : varsolver
 USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
@@ -117,12 +118,6 @@ SUBROUTINE derivauto(ph_deriv, pco2_deriv, fco2_deriv, co2_deriv, hco3_deriv, co
   !     OmegaA_deriv = derivatives of Omega for aragonite, i.e., the aragonite saturation state
   !     OmegaC_deriv = derivatives of Omega for calcite, i.e., the   calcite saturation state
   !
-
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
 ! Input variables
   !>     number of records
@@ -307,7 +302,7 @@ SUBROUTINE derivauto(ph_deriv, pco2_deriv, fco2_deriv, co2_deriv, hco3_deriv, co
         s(1) = DUAL_NUM(DBLE(sal(i)),(/0.0D0,0.0D0,0.0D0,0.0D0,0.0D0,1.0D0/))
 !       Pressure (in double precision and with derivatives)
         pd = DUAL_NUM(DBLE(press),(/0.0D0,0.0D0,0.0D0,0.0D0,0.0D0,0.0D0/))
-        tempis68 = sw_temp_DNAD(s(1), tempot68, pd, zero )
+        tempis68 = compute_sea_water_insitu_temperature(s(1), tempot68, pd, zero )
 !       c) Convert the in-situ temp on older IPTS 68 scale to modern scale (ITS 90)
         tempis90 = 0.99975*tempis68 + 0.0002
 !       Note: parts (a) and (c) above are tiny corrections;
@@ -404,7 +399,7 @@ SUBROUTINE derivauto(ph_deriv, pco2_deriv, fco2_deriv, co2_deriv, hco3_deriv, co
 
 !       Compute in-situ density [kg/m^3]
 !       and derivatives with respect to temperature and salinity
-        drho_sw = rho_DNAD(s(1), tempis68, prb)
+        drho_sw = rho(s(1), tempis68, prb)
 
 !       Either convert units of DIC and ALK (MODEL case) or not (DATA case)
         IF     (trim(optCON) == 'mol/kg') THEN
@@ -430,7 +425,7 @@ SUBROUTINE derivauto(ph_deriv, pco2_deriv, fco2_deriv, co2_deriv, hco3_deriv, co
 !       ------------------------------------
 
 !       Compute chemical variables and their derivatives
-        CALL varsolver_DNAD(dph, dpco2, dfco2, dco2, dhco3, dco3, dOmegaA, dOmegaC, &
+        CALL varsolver(dph, dpco2, dfco2, dco2, dhco3, dco3, dOmegaA, dOmegaC, &
                     tempis90, s(1), ta, tc, pt, sit,                                &
                     Bt(1), St(1), Ft(1),                                            &
                     K0(1), K1(1), K2(1), Kb(1), Kw(1), Ks(1), Kf(1),                &

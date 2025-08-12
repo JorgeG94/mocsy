@@ -3,8 +3,9 @@
 !> Module with errors subroutine - Propagate standard error (or uncertainty) in carbonate system vars 
 MODULE mocsy_errors
 
-USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_constants, only : constants, constants_DNAD
+USE mocsy_singledouble, only : rx, r8, wp, sgle
+USE mocsy_constants, only : constants
+use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_derivnum, only : derivnum
 
 IMPLICIT NONE ; PRIVATE
@@ -72,13 +73,6 @@ SUBROUTINE errors  (eH, epCO2, efCO2, eCO2, eHCO3, eCO3, eOmegaA, eOmegaC,   &
 !     - eOmegaC  total error of Omega calcite   (calcite saturation state)
 !
 !*****************************************************************************************************
-
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
-
 ! Input variables
   !>     number of records
 !f2py intent(hide) n

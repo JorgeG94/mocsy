@@ -4,22 +4,27 @@
 MODULE mocsy_sw_ptmp
 
 USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_sw_adtg, only : sw_adtg, sw_adtg_DNAD
+USE mocsy_sw_adtg, only : compute_adiabatic_temperature_gradient
 USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
 
-PUBLIC sw_ptmp, sw_ptmp_DNAD
-
-CONTAINS
-!> Function to calculate potential temperature [C] from in-situ temperature
-FUNCTION sw_ptmp  (s,t,p,pr)
-
+interface compute_sea_water_potential_temperature
   !     ==================================================================
   !     Calculates potential temperature [C] from in-situ Temperature [C]
   !     From UNESCO 1983 report.
   !     Armin Koehl akoehl@ucsd.edu
   !     ==================================================================
+  module procedure :: compute_sea_water_potential_temperature
+  module procedure :: compute_sea_water_potential_temperature_DNAD
+end interface compute_sea_water_potential_temperature
+
+public :: compute_sea_water_potential_temperature
+
+
+CONTAINS
+!> Function to calculate potential temperature [C] from in-situ temperature
+FUNCTION compute_sea_water_potential_temperature  (s,t,p,pr) result(sea_water_temperature)
 
   !     Input arguments:
   !     -------------------------------------
@@ -40,58 +45,43 @@ FUNCTION sw_ptmp  (s,t,p,pr)
 
 ! local arguments
   REAL(kind=r8) :: del_P ,del_th, th, q
-  REAL(kind=r8) :: onehalf, two, three
-  PARAMETER (onehalf = 0.5d0, two = 2.d0, three = 3.d0 )
+  real(r8), parameter :: onehalf = 0.5d0, two = 2.d0, three = 3.d0 
 
-! REAL(kind=r8) :: sw_adtg
-! EXTERNAL sw_adtg
 
 ! Output 
-  REAL(kind=r8) :: sw_ptmp
+  REAL(kind=r8) :: sea_water_temperature
 
   ! theta1
   del_P  = PR - P
-  del_th = del_P*sw_adtg(S,T,P)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,T,P)
   th     = T + onehalf*del_th
   q      = del_th
 
   ! theta2
-  del_th = del_P*sw_adtg(S,th,P+onehalf*del_P)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,th,P+onehalf*del_P)
   th     = th + (1.d0 - 1.d0/SQRT(two))*(del_th - q)
   q      = (two-SQRT(two))*del_th + (-two+three/SQRT(two))*q
 
   ! theta3
-  del_th = del_P*sw_adtg(S,th,P+onehalf*del_P)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,th,P+onehalf*del_P)
   th     = th + (1.d0 + 1.d0/SQRT(two))*(del_th - q)
   q      = (two + SQRT(two))*del_th + (-two-three/SQRT(two))*q
 
   ! theta4
-  del_th = del_P*sw_adtg(S,th,P+del_P)
-  sw_ptmp     = th + (del_th - two*q)/(two*three)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,th,P+del_P)
+  sea_water_temperature     = th + (del_th - two*q)/(two*three)
 
   RETURN
-END FUNCTION sw_ptmp
+END FUNCTION compute_sea_water_potential_temperature
 
 
 !> Function to calculate potential temperature [C] from in-situ temperature
 !! and derivative with respect to insitu temperature and salinity
-FUNCTION sw_ptmp_DNAD  (s,t,p,pr)
+FUNCTION compute_sea_water_potential_temperature_DNAD  (s,t,p,pr) result(sea_water_temperature)
 
   !     It is similar to subroutine 'sw_ptmp' above except that it also computes
   !     partial derivative of potential temperature
   !     with respect to insitu temperature and salinity.
-  !     ==================================================================
-  !     Calculates potential temperature [C] from in-situ Temperature [C]
-  !     From UNESCO 1983 report.
-  !     Armin Koehl akoehl@ucsd.edu
-  !     ==================================================================
-
-  !     Input arguments:
-  !     -------------------------------------
-  !     s  = salinity            [psu      (PSS-78) ]
-  !     t  = temperature         [degree C (IPTS-68)]
-  !     p  = pressure            [db]
-  !     pr = reference pressure  [db]
 
 ! Input arguments
   !> salinity [psu (PSS-78)]
@@ -105,32 +95,32 @@ FUNCTION sw_ptmp_DNAD  (s,t,p,pr)
 
 ! local arguments
   TYPE(DUAL_NUM) :: del_P ,del_th, th, q
-  REAL(kind=r8) :: onehalf, two, three
-  PARAMETER (onehalf = 0.5d0, two = 2.d0, three = 3.d0 )
+  real(r8), parameter :: onehalf = 0.5d0, two = 2.d0, three = 3.d0 
 
 ! Output 
-  TYPE(DUAL_NUM) :: sw_ptmp_DNAD
+  TYPE(DUAL_NUM) :: sea_water_temperature
 
   ! theta1
   del_P  = PR - P
-  del_th = del_P*sw_adtg_DNAD(S,T,P)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,T,P)
   th     = T + onehalf*del_th
   q      = del_th
 
   ! theta2
-  del_th = del_P*sw_adtg_DNAD(S,th,P+onehalf*del_P)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,th,P+onehalf*del_P)
   th     = th + (1.d0 - 1.d0/SQRT(two))*(del_th - q)
   q      = (two-SQRT(two))*del_th + (-two+three/SQRT(two))*q
 
   ! theta3
-  del_th = del_P*sw_adtg_DNAD(S,th,P+onehalf*del_P)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,th,P+onehalf*del_P)
   th     = th + (1.d0 + 1.d0/SQRT(two))*(del_th - q)
   q      = (two + SQRT(two))*del_th + (-two-three/SQRT(two))*q
 
   ! theta4
-  del_th = del_P*sw_adtg_DNAD(S,th,P+del_P)
-  sw_ptmp_DNAD  = th + (del_th - two*q)/(two*three)
+  del_th = del_P*compute_adiabatic_temperature_gradient(S,th,P+del_P)
+  sea_water_temperature  = th + (del_th - two*q)/(two*three)
 
   RETURN
-END FUNCTION sw_ptmp_DNAD
+END FUNCTION compute_sea_water_potential_temperature_DNAD
+
 END MODULE mocsy_sw_ptmp

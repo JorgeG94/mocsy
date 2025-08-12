@@ -3,7 +3,7 @@
 !> Module with routines needed to compute gas exchange (flxco2, scco2, atmospheric xCO2 and pCO2)
 MODULE mocsy_gasx
 
-USE mocsy_singledouble, only : rx, r8, wp
+USE mocsy_singledouble, only : rx, r8, wp, sgle
 USE mocsy_vars, only : vars
 USE mocsy_p2fCO2, only : p2fCO2
 
@@ -111,11 +111,6 @@ SUBROUTINE flxco2(co2flux, co2ex, dpco2,                                        
   !     p = pressure [decibars]; p = f(depth, latitude) if computed from depth [m] OR p = depth if [db]
   !     tempis  = in-situ temperature [degrees C]
 
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
 ! Input variables
   !>     number of records
@@ -917,12 +912,6 @@ SUBROUTINE o2flux(T, S, kw660, ppo, o2, dz1, N, o2ex)
   !    Original for OCMIP2: Ray Najjar, 29 January 1999
   !    Modified for OMIP:   James Orr, LSCE/IPSL France, 14 March 2015
   !    **********************************************************************
-
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
   !> number of records
   INTEGER, intent(in) :: N

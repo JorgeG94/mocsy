@@ -3,7 +3,7 @@
 !>    Module with tpot subroutine - compute potential T from in situ T,S,P
 MODULE mocsy_tpot
 
-USE mocsy_singledouble, only : rx, r8, wp
+USE mocsy_singledouble, only : rx, r8, wp, sgle
 USE mocsy_sw_ptmp, only : sw_ptmp
 
 IMPLICIT NONE ; PRIVATE
@@ -18,11 +18,6 @@ SUBROUTINE tpot(salt, tempis, press, pressref, N, tempot)
   !    Compute potential temperature from arrays of in situ temp, salinity, and pressure.
   !    Needed because sw_ptmp is a function
 
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
   !> number of records
 !f2py intent(hide) n
@@ -47,8 +42,6 @@ SUBROUTINE tpot(salt, tempis, press, pressref, N, tempot)
 
   INTEGER :: i
 
-! REAL(kind=r8) :: sw_ptmp
-! EXTERNAL sw_ptmp
 
   DO i = 1,N
      dsalt     = DBLE(salt(i))

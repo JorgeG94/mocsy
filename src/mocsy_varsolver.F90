@@ -4,17 +4,20 @@
 MODULE mocsy_varsolver
 
 USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_phsolvers, only : solve_at_general, solve_at_general_DNAD
-USE mocsy_sw_ptmp, only : sw_ptmp
+USE mocsy_phsolvers, only : solve_at_general
+USE mocsy_sw_ptmp, only : compute_sea_water_potential_temperature
 USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
-
-PUBLIC varsolver, varsolver_DNAD 
+public :: varsolver
+interface varsolver 
+module procedure :: varsolver_single
+module procedure :: varsolver_DNAD
+end interface varsolver
 
 CONTAINS
 !>    Solve for pH and other carbonate system variables (with input from vars routine)
-SUBROUTINE varsolver(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,             &
+SUBROUTINE varsolver_single(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,             &
                     temp, salt, ta, tc, pt, sit,                                 &
                     Bt, St, Ft,                                                  &
                     K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa, K1p, K2p, K3p, Ksi,  & 
@@ -204,11 +207,7 @@ SUBROUTINE varsolver(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,            
      Ptot = Patm              !total pressure (in atm) = atmospheric pressure ONLY
   ELSEIF (trim(opGAS) == 'Ppot' .OR. trim(opGAS) == 'ppot') THEN
      !Use potential temperature and atmospheric pressure (water parcel adiabatically brought back to surface)
-     !temp68 = (temp - 0.0002d0) / 0.99975d0          !temp = in situ T; temp68 is same converted to ITPS-68 scale
-     !tempot68 = sw_ptmp(salt, temp68, Phydro_bar*10d0, 0.0d0) !potential temperature (C)
-     !tempot   = 0.99975*tempot68 + 0.0002
-     !tk0 = tempot + 273.15d0  !potential temperature (K) for fugacity coeff. calc as needed for potential fCO2 & pCO2
-     tempot = sw_ptmp(salt, temp, Phydro_bar*10d0, 0.0d0) !potential temperature (C)
+     tempot = compute_sea_water_potential_temperature(salt, temp, Phydro_bar*10d0, 0.0d0) !potential temperature (C)
      tk0 = tempot + 273.15d0  !potential temperature (K) for fugacity coeff. calc as needed for potential fCO2 & pCO2
      Ptot = Patm              !total pressure (in atm) = atmospheric pressure ONLY
   ELSEIF (trim(opGAS) == 'Pinsitu' .OR. trim(opGAS) == 'pinsitu') THEN
@@ -248,7 +247,7 @@ SUBROUTINE varsolver(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,            
   OmegaC = (Ca*cc) / Kspc
 
   RETURN
-END SUBROUTINE varsolver
+END SUBROUTINE varsolver_single
 
 !>    Solve for pH and other carbonate system variables (with input from vars routine)
 !>    and compute partial derivatives (buffer factors) using dual numbers (DNAD) technique
@@ -404,7 +403,7 @@ SUBROUTINE varsolver_DNAD (ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,      
 !    * modified to use mocsy's Ks instead of its own
 !    * modified to support DNAD (Dual Numbers Automatic Derivation)
 ! 1) Solve for H+ using above result as the initial H+ value
-  H = solve_at_general_DNAD(ta, tc, Bt,                                    & 
+  H = solve_at_general(ta, tc, Bt,                                    & 
                        pt,     sit,                                        &
                        St, Ft,                                             &
                        K0, K1, K2, Kb, Kw, Ks, Kf, K1p, K2p, K3p, Ksi )
@@ -450,11 +449,7 @@ SUBROUTINE varsolver_DNAD (ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,      
      Ptot = Patm              !total pressure (in atm) = atmospheric pressure ONLY
   ELSEIF (trim(opGAS) == 'Ppot' .OR. trim(opGAS) == 'ppot') THEN
      !Use potential temperature and atmospheric pressure (water parcel adiabatically brought back to surface)
-     !temp68 = (temp - 0.0002d0) / 0.99975d0          !temp = in situ T; temp68 is same converted to ITPS-68 scale
-     !tempot68 = sw_ptmp(salt, temp68, Phydro_bar*10d0, 0.0d0) !potential temperature (C)
-     !tempot   = 0.99975*tempot68 + 0.0002
-     !tk0 = tempot + 273.15d0  !potential temperature (K) for fugacity coeff. calc as needed for potential fCO2 & pCO2
-     tempot = sw_ptmp(salt%x_ad_, temp%x_ad_, Phydro_bar%x_ad_*10d0, 0.0d0) !potential temperature (C)
+     tempot = compute_sea_water_potential_temperature(salt%x_ad_, temp%x_ad_, Phydro_bar%x_ad_*10d0, 0.0d0) !potential temperature (C)
      tk0 = tempot + 273.15d0  !potential temperature (K) for fugacity coeff. calc as needed for potential fCO2 & pCO2
      Ptot = Patm              !total pressure (in atm) = atmospheric pressure ONLY
   ELSEIF (trim(opGAS) == 'Pinsitu' .OR. trim(opGAS) == 'pinsitu') THEN

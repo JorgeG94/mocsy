@@ -22,12 +22,14 @@ option(MOCSY_PRECISION "Precision to use (1 or 2)" 2)
 option(BUILD_SHARED_LIBS "Build shared/dynamic libraries" OFF)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 
 ################################################################################
 
 if("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
 
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -ffree-line-length-none -fno-range-check -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons -Wsurprising")
+  set(FPE_EXCEPTIONS "-ffpe-trap=invalid,zero,overflow")
 
   check_fortran_compiler_flag("-fallow-invalid-boz" _boz_flag)
   check_fortran_compiler_flag("-fallow-argument-mismatch" _argmis_flag)
@@ -54,6 +56,10 @@ else()
 endif()
 
 ################################################################################
+if(NOT TARGET test-drive::test-drive AND MOCSY_ENABLE_TESTING)
+  enable_testing()
+  find_package("test-drive" REQUIRED)
+endif()
 
 add_library(mocsy)
 
@@ -75,6 +81,13 @@ target_include_directories(mocsy PUBLIC
 install(TARGETS mocsy
   EXPORT mocsy-targets
   ARCHIVE DESTINATION lib
+)
+
+add_executable(test ${PROJECT_SOURCE_DIR}/test/test_mocsy.F90)
+target_link_libraries(test PRIVATE mocsy)
+target_include_directories(test PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mod>
+  $<INSTALL_INTERFACE:include>
 )
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/mod/
@@ -117,3 +130,4 @@ configure_file(
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mocsy.pc"
   DESTINATION lib/pkgconfig
 )
+
