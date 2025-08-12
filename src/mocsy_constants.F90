@@ -425,7 +425,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Use Millero equation's 117.400 constant instead of 117.385 (Dickson et al., 2007).
 !       The latter is only an crude approximation to convert to Total scale (by subtracting 0.015)
 !       And we want to stay on the SWS scale anyway for the pressure correction later.
-        ksi(i) = calculate_ksi(inverse_temperature_kelvin, log_temperature_kelvin, ionic_strength, salinity)
+        ksi(i) = calculate_ksi(inverse_temperature_kelvin, log_temperature_kelvin, salinity, ionic_strength)
 
 !       Kw = [H][OH]
 !       (seawater scale)
