@@ -9,12 +9,15 @@ USE mocsy_sw_ptmp, only : compute_sea_water_potential_temperature
 USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
-
-PUBLIC varsolver, varsolver_DNAD 
+public :: varsolver
+interface varsolver 
+module procedure :: varsolver_single
+module procedure :: varsolver_DNAD
+end interface varsolver
 
 CONTAINS
 !>    Solve for pH and other carbonate system variables (with input from vars routine)
-SUBROUTINE varsolver(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,             &
+SUBROUTINE varsolver_single(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,             &
                     temp, salt, ta, tc, pt, sit,                                 &
                     Bt, St, Ft,                                                  &
                     K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa, K1p, K2p, K3p, Ksi,  & 
@@ -244,7 +247,7 @@ SUBROUTINE varsolver(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,            
   OmegaC = (Ca*cc) / Kspc
 
   RETURN
-END SUBROUTINE varsolver
+END SUBROUTINE varsolver_single
 
 !>    Solve for pH and other carbonate system variables (with input from vars routine)
 !>    and compute partial derivatives (buffer factors) using dual numbers (DNAD) technique

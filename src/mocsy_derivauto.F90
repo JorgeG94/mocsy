@@ -9,7 +9,7 @@ use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_p80, only : p80
 USE mocsy_rho, only : rho
 USE mocsy_sw_temp, only : compute_sea_water_insitu_temperature
-USE mocsy_varsolver, only : varsolver, varsolver_DNAD
+USE mocsy_varsolver, only : varsolver
 USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
@@ -425,7 +425,7 @@ SUBROUTINE derivauto(ph_deriv, pco2_deriv, fco2_deriv, co2_deriv, hco3_deriv, co
 !       ------------------------------------
 
 !       Compute chemical variables and their derivatives
-        CALL varsolver_DNAD(dph, dpco2, dfco2, dco2, dhco3, dco3, dOmegaA, dOmegaC, &
+        CALL varsolver(dph, dpco2, dfco2, dco2, dhco3, dco3, dOmegaA, dOmegaC, &
                     tempis90, s(1), ta, tc, pt, sit,                                &
                     Bt(1), St(1), Ft(1),                                            &
                     K0(1), K1(1), K2(1), Kb(1), Kw(1), Ks(1), Kf(1),                &

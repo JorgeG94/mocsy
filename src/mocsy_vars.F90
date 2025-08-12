@@ -9,7 +9,7 @@ use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_p80, only : p80
 USE mocsy_rho, only : rho
 USE mocsy_sw_temp, only : compute_sea_water_insitu_temperature
-USE mocsy_varsolver, only : varsolver, varsolver_DNAD
+USE mocsy_varsolver, only : varsolver
 
 IMPLICIT NONE ; PRIVATE
 
