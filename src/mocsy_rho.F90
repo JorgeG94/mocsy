@@ -8,7 +8,11 @@ USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
 
-PUBLIC rho, rho_DNAD 
+public :: rho
+interface rho
+  module procedure :: rho_single
+  module procedure :: rho_DNAD
+end interface rho
 #if USE_PRECISION == 2
 #   define SGLE(x)    (x)
 #else
@@ -18,7 +22,7 @@ PUBLIC rho, rho_DNAD
 
 CONTAINS
 !> Function to compute in situ density from salinity (psu), in situ temperature (C), & pressure (bar)
-FUNCTION rho(salt, temp, pbar)
+FUNCTION rho_single(salt, temp, pbar)
 
   ! Compute in situ density from salinity (psu), in situ temperature (C), & pressure (bar)
 
@@ -37,7 +41,7 @@ FUNCTION rho(salt, temp, pbar)
   REAL(kind=r8) :: Ksbmw, Ksbm0, Ksbm
   REAL(kind=r8) :: drho
 
-  REAL(kind=rx) :: rho
+  REAL(kind=rx) :: rho_single
 
   !     Input arguments:
   !     -------------------------------------
@@ -92,10 +96,10 @@ FUNCTION rho(salt, temp, pbar)
 
 ! Density of seawater at S,T,P
   drho = rho0/(1.0d0 - P/Ksbm)
-  rho = SGLE(drho)
+  rho_single = SGLE(drho)
 
   RETURN
-END FUNCTION rho
+END FUNCTION rho_single
 
 
 !> Function to compute in situ density from salinity (psu), in situ temperature (C), & pressure (bar)

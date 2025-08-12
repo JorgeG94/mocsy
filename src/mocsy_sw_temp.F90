@@ -4,16 +4,21 @@
 MODULE mocsy_sw_temp
 
 USE mocsy_singledouble, only : rx, r8, wp
-USE mocsy_sw_ptmp, only : sw_ptmp, sw_ptmp_DNAD
+USE mocsy_sw_ptmp, only : compute_sea_water_potential_temperature
 USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
 
-PUBLIC sw_temp, sw_temp_DNAD
+PUBLIC compute_sea_water_insitu_temperature
+
+interface compute_sea_water_insitu_temperature
+  module procedure :: compute_sea_water_insitu_temperature
+  module procedure :: compute_sea_water_insitu_temperature_DNAD
+end interface compute_sea_water_insitu_temperature
 
 CONTAINS
 !> Function to compute in-situ temperature [C] from potential temperature [C]
-FUNCTION sw_temp( s, t, p, pr )
+FUNCTION compute_sea_water_insitu_temperature( s, t, p, pr ) result(sea_water_temperature)
   !     =============================================================
   !     SW_TEMP
   !     Computes in-situ temperature [C] from potential temperature [C]
@@ -63,7 +68,7 @@ FUNCTION sw_temp( s, t, p, pr )
   REAL(kind=r8) ::  ds, dt, dp, dpr
   REAL(kind=r8) :: dsw_temp
 
-  REAL(kind=rx) ::   sw_temp
+  REAL(kind=rx) ::   sea_water_temperature
 ! EXTERNAL sw_ptmp
 ! REAL(kind=r8) ::   sw_ptmp
 
@@ -76,19 +81,19 @@ FUNCTION sw_temp( s, t, p, pr )
   !    (see https://svn.mpl.ird.fr/us191/oceano/tags/V0/lib/matlab/seawater/sw_temp.m)
   !    Carry out inverse calculation by swapping P_ref (pr) and Pressure (p)
   !    in routine that is normally used to compute potential temp from temp
-  dsw_temp = sw_ptmp(ds, dt, dpr, dp)
-  sw_temp = SGLE(dsw_temp)
+  dsw_temp = compute_sea_water_potential_temperature(ds, dt, dpr, dp)
+  sea_water_temperature = SGLE(dsw_temp)
 
   !    The above simplification works extremely well (compared to Table in 1983 report)
   !    whereas the sw_temp routine from MIT GCM site does not seem to work right
 
   RETURN
-END FUNCTION sw_temp
+END FUNCTION compute_sea_water_insitu_temperature
 
 
 !> Function to compute in-situ temperature [C] from potential temperature [C]
 !! and derivative with respect to potential temperature and salinity
-FUNCTION sw_temp_DNAD( s, t, p, pr )
+FUNCTION compute_sea_water_insitu_temperature_DNAD( s, t, p, pr ) result(sea_water_temperature)
   !     It is similar to subroutine 'sw_temp' above except that it also computes
   !     partial derivative of insitu temperature
   !     with respect to potential temperature and salinity.
@@ -132,18 +137,18 @@ FUNCTION sw_temp_DNAD( s, t, p, pr )
   !> reference pressure [db]
   TYPE(DUAL_NUM) ::   pr
 
-  TYPE(DUAL_NUM) ::   sw_temp_DNAD
+  TYPE(DUAL_NUM) ::   sea_water_temperature
 
 
   !    Simple solution
   !    (see https://svn.mpl.ird.fr/us191/oceano/tags/V0/lib/matlab/seawater/sw_temp.m)
   !    Carry out inverse calculation by swapping P_ref (pr) and Pressure (p)
   !    in routine that is normally used to compute potential temp from temp
-  sw_temp_DNAD = sw_ptmp_DNAD(s, t, pr, p)
+  sea_water_temperature = compute_sea_water_potential_temperature(s, t, pr, p)
 
   !    The above simplification works extremely well (compared to Table in 1983 report)
   !    whereas the sw_temp routine from MIT GCM site does not seem to work right
 
   RETURN
-END FUNCTION sw_temp_DNAD
+END FUNCTION compute_sea_water_insitu_temperature_DNAD
 END MODULE mocsy_sw_temp

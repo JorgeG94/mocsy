@@ -7,8 +7,8 @@ MODULE mocsy_constants_dnad
 
 USE mocsy_singledouble, only : rx, r8, wp
 USE mocsy_p80, only : p80
-USE mocsy_sw_temp, only : sw_temp, sw_temp_DNAD
-USE mocsy_sw_ptmp, only : sw_ptmp, sw_ptmp_DNAD
+USE mocsy_sw_temp, only : compute_sea_water_insitu_temperature
+USE mocsy_sw_ptmp, only : compute_sea_water_potential_temperature 
 USE Dual_Num_Auto_Diff
 
 
@@ -299,7 +299,7 @@ SUBROUTINE constants_DNAD(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !          (see Dickson et al., Best Practices Guide, 2007, Chap. 5, p. 7, including footnote)
         tempot68 = (tempot - 0.0002) / 0.99975
 !       b) Compute "in-situ Temperature" from "Potential Temperature" (both on IPTS 68)
-        tempis68 = sw_temp_DNAD(sal(i), tempot68, p, zero )
+        tempis68 = compute_sea_water_insitu_temperature(sal(i), tempot68, p, zero )
 !       c) Convert the in-situ temp on older IPTS 68 scale to modern scale (ITS 90)
         tempis = 0.99975*tempis68 + 0.0002
 !       Note: parts (a) and (c) above are tiny corrections;
@@ -308,7 +308,7 @@ SUBROUTINE constants_DNAD(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       When optT = 'Tinsitu', tempis is input & output (no tempot needed)
         tempis    = temp(i)
         tempis68  = (temp(i) - 0.0002) / 0.99975
-        dtempot68 = sw_ptmp_DNAD(sal(i), tempis68, p, zero )
+        dtempot68 = compute_sea_water_potential_temperature(sal(i), tempis68, p, zero )
         dtempot   = 0.99975*dtempot68 + 0.0002
      ELSE
         PRINT *,"optT must be either 'Tpot' or 'Tinsitu'"

@@ -8,7 +8,7 @@ USE mocsy_constants, only : constants
 use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_p80, only : p80
 USE mocsy_rho, only : rho
-USE mocsy_sw_temp, only : sw_temp
+USE mocsy_sw_temp, only : compute_sea_water_insitu_temperature
 USE mocsy_varsolver, only : varsolver, varsolver_DNAD
 
 IMPLICIT NONE ; PRIVATE
@@ -313,7 +313,7 @@ SUBROUTINE vars(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC, BetaD, rhoSW, p,
 !          (see Dickson et al., Best Practices Guide, 2007, Chap. 5, p. 7, including footnote)
         tempot68 = (tempot - 0.0002_rx) / 0.99975_rx
 !       b) Compute "in-situ Temperature" from "Potential Temperature" (both on IPTS 68)
-        tempis68 = sw_temp(sal(i), SGLE(tempot68), p(i), SGLE(0.d0) )
+        tempis68 = compute_sea_water_insitu_temperature(sal(i), SGLE(tempot68), p(i), SGLE(0.d0) )
 !       c) Convert the in-situ temp on older IPTS 68 scale to modern scale (ITS 90)
         tempis90 = 0.99975*tempis68 + 0.0002_r8
 !       Note: parts (a) and (c) above are tiny corrections;
@@ -711,7 +711,7 @@ SUBROUTINE vars_pertK(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,     &
 !          (see Dickson et al., Best Practices Guide, 2007, Chap. 5, p. 7, including footnote)
         tempot68 = (tempot - 0.0002_rx) / 0.99975_rx
 !       b) Compute "in-situ Temperature" from "Potential Temperature" (both on IPTS 68)
-        tempis68 = sw_temp(sal(i), SGLE(tempot68), p, SGLE(0.0_rx) )
+        tempis68 = compute_sea_water_insitu_temperature(sal(i), SGLE(tempot68), p, SGLE(0.0_rx) )
 !       c) Convert the in-situ temp on older IPTS 68 scale to modern scale (ITS 90)
         tempis90 = 0.99975*tempis68 + 0.0002
 !       Note: parts (a) and (c) above are tiny corrections;

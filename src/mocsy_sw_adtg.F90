@@ -8,11 +8,17 @@ USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
 
-PUBLIC sw_adtg, sw_adtg_DNAD
+
+public :: compute_adiabatic_temperature_gradient
+
+interface compute_adiabatic_temperature_gradient
+  module procedure :: sw_adtg_single
+  module procedure :: sw_adtg_DNAD
+end interface compute_adiabatic_temperature_gradient
 
 CONTAINS
 !>  Function to calculate adiabatic temperature gradient as per UNESCO 1983 routines.
-FUNCTION sw_adtg(s, t, p)
+FUNCTION sw_adtg_single(s, t, p)
   !     ==================================================================
   !     Calculates adiabatic temperature gradient as per UNESCO 1983 routines.
   !     Armin Koehl akoehl@ucsd.edu
@@ -23,7 +29,7 @@ FUNCTION sw_adtg(s, t, p)
   REAL(kind=r8) :: t
   !> pressure [db]
   REAL(kind=r8) :: p
-  REAL(kind=r8) :: sw_adtg
+  REAL(kind=r8) :: sw_adtg_single
   REAL(kind=r8), PARAMETER :: sref = 35.0d0
   REAL(kind=r8), PARAMETER :: a0 = 3.5803d-5
   REAL(kind=r8), PARAMETER :: a1 = 8.5258d-6
@@ -44,12 +50,12 @@ FUNCTION sw_adtg(s, t, p)
 
   
   ! UNESCO 1983 adiabatic temperature gradient coefficients
-  sw_adtg = a0 + (a1 + (a2 + a3*t)*t)*t &
+  sw_adtg_single = a0 + (a1 + (a2 + a3*t)*t)*t &
           + (b0 + b1*t)*(s - sref) &
           + ((c0 + (c1 + (c2 + c3*t)*t)*t) + (d0 + d1*t)*(s - sref))*p &
           + (e0 + (e1 + e2*t)*t)*p*p
           
-END FUNCTION sw_adtg
+END FUNCTION sw_adtg_single
 
 !>  Function to calculate adiabatic temperature gradient as per UNESCO 1983 routines.
 !! and derivative with respect to temperature and salinity

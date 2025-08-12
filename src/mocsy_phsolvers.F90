@@ -21,8 +21,19 @@ USE Dual_Num_Auto_Diff
 IMPLICIT NONE ; PRIVATE
 
 PUBLIC anw_infsup, ahini_for_at
-PUBLIC equation_at, equation_at_DNAD
-PUBLIC solve_at_general, solve_at_general_DNAD, solve_at_general_sec, SOLVE_AT_FAST
+public :: equation_at, solve_at_general
+PUBLIC solve_at_general_sec, SOLVE_AT_FAST
+
+interface equation_at
+  module procedure :: equation_at_single
+  module procedure :: equation_at_DNAD
+end interface equation_at
+
+interface solve_at_general
+  module procedure :: solve_at_general_single
+  module procedure :: solve_at_general_DNAD
+end interface solve_at_general
+
 
 ! General parameters
 REAL(KIND=wp), PARAMETER :: pp_rdel_ah_target = 1.E-8_wp
@@ -80,7 +91,7 @@ END SUBROUTINE anw_infsup
 
 !===============================================================================
 
-FUNCTION equation_at(p_alktot, p_h,       p_dictot, p_bortot,                 &
+FUNCTION equation_at_single(p_alktot, p_h,       p_dictot, p_bortot,                 &
                      p_po4tot, p_siltot,                                      &
                      p_so4tot, p_flutot,                                      &
                      K0, K1, K2, Kb, Kw, Ks, Kf, K1p, K2p, K3p, Ksi,          &
@@ -88,7 +99,7 @@ FUNCTION equation_at(p_alktot, p_h,       p_dictot, p_bortot,                 &
 
   ! Purpose: Compute total alkalinity from ion concentrations and equilibrium constants
 
-REAL(KIND=wp) :: equation_at
+REAL(KIND=wp) :: equation_at_single
 
 ! Argument variables
 REAL(KIND=wp), INTENT(IN)            :: p_alktot
@@ -166,7 +177,7 @@ zalk_flu   = p_flutot * (znumer_flu/zdenom_flu - 1._wp)
 ! H2O - OH
 zalk_wat   = Kw/p_h - p_h/aphscale
 
-equation_at =    zalk_dic + zalk_bor + zalk_po4 + zalk_sil &
+equation_at_single =    zalk_dic + zalk_bor + zalk_po4 + zalk_sil &
                + zalk_so4 + zalk_flu                       &
                + zalk_wat - p_alktot
 
@@ -215,7 +226,7 @@ IF(PRESENT(p_deriveqn)) THEN
                 - Kw/p_h**2 - 1._wp/aphscale
 ENDIF
 RETURN
-END FUNCTION equation_at
+END FUNCTION equation_at_single
 
 !===============================================================================
 
@@ -421,7 +432,7 @@ END SUBROUTINE ahini_for_at
 
 !===============================================================================
 
-FUNCTION solve_at_general(p_alktot, p_dictot, p_bortot,                       &
+FUNCTION solve_at_general_single(p_alktot, p_dictot, p_bortot,                       &
                           p_po4tot, p_siltot,                                 &
                           p_so4tot, p_flutot,                                 &
                           K0, K1, K2, Kb, Kw, Ks, Kf, K1p, K2p, K3p, Ksi,     &
@@ -432,7 +443,7 @@ FUNCTION solve_at_general(p_alktot, p_dictot, p_bortot,                       &
 ! Universal pH solver that converges from any given initial value,
 ! determines upper an lower bounds for the solution if required
 
-REAL(KIND=wp) :: SOLVE_AT_GENERAL
+REAL(KIND=wp) :: solve_at_general_single
 
 ! Argument variables 
 !--------------------
@@ -607,7 +618,7 @@ DO
    IF(l_exitnow) EXIT
 ENDDO
 
-solve_at_general = zh
+solve_at_general_single = zh
 
 IF(PRESENT(p_val)) THEN
    IF(zh > 0._wp) THEN
@@ -620,7 +631,7 @@ IF(PRESENT(p_val)) THEN
    ENDIF
 ENDIF
 RETURN
-END FUNCTION solve_at_general
+END FUNCTION solve_at_general_single
 
 !===============================================================================
 

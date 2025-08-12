@@ -6,8 +6,8 @@ module mocsy_constants
 
   use mocsy_singledouble, only: rx, r8, wp
   use mocsy_p80, only: p80
-  use mocsy_sw_temp, only: sw_temp, sw_temp_DNAD
-  use mocsy_sw_ptmp, only: sw_ptmp, sw_ptmp_DNAD
+  use mocsy_sw_temp, only: compute_sea_water_insitu_temperature
+  use mocsy_sw_ptmp, only: compute_sea_water_potential_temperature
   use Dual_Num_Auto_Diff
   use mocsy_physical_constants
 
@@ -291,7 +291,7 @@ contains
         tempot68 = (tempot - 0.0002_rx)/0.99975_rx
 
         !       b) Compute "in-situ Temperature" from "Potential Temperature" (both on IPTS 68)
-        tempis68 = sw_temp(sal(i), tempot68, p, SGLE(0.0_rx))
+        tempis68 = compute_sea_water_insitu_temperature(sal(i), tempot68, p, SGLE(0.0_rx))
 
         !       c) Convert the in-situ temp on older IPTS 68 scale to modern scale (ITS 90)
         tempis = 0.99975_rx*tempis68 + 0.0002_rx
@@ -303,7 +303,7 @@ contains
         !       When optT = 'Tinsitu', tempis is input & output (no tempot needed)
         tempis = temp(i)
         tempis68 = (temp(i) - 0.0002_rx)/0.99975_rx
-        dtempot68 = sw_ptmp(dble(sal(i)), dble(tempis68), dble(p), 0.0d0)
+        dtempot68 = compute_sea_water_potential_temperature(dble(sal(i)), dble(tempis68), dble(p), 0.0d0)
         dtempot = 0.99975_rx*dtempot68 + 0.0002_rx
       else
         print *, "optT must be either 'Tpot' or 'Tinsitu'"
