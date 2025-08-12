@@ -18,8 +18,12 @@ real(r8), parameter, public :: ideal_gas_constant_jkmol = 8.314472_r8 ! [J/(mol*
 real(r8), parameter, public :: R_jkmol_scaled_by_10 = 83.14472_r8 
 real(r8), parameter, public :: ideal_gas_constant_codata = 82.05736_r8 ! [cm^3*atm/(K*mol)]
 real(r8), parameter, public :: co2_partial_molar_volume = 32.3_r8  ! [cm3/mol]
-REAL(r8), PARAMETER, public :: ZERO_C_IN_KELVIN = 273.15_r8
+real(r8), PARAMETER, public :: ZERO_C_IN_KELVIN = 273.15_r8
 real(r8), parameter, public :: BAR_TO_ATM =  1.01325_r8
+real(r8), parameter, public :: FLUORIDE_ATOMIC_MASS = 18.9984_r8! [F-]
+real(r8), parameter, public :: SULFATE_ATOMIC_MASS = 96.062_r8! [SO4-]
+real(r8), parameter, public :: BORON_ATOMIC_MASS = 10.811_r8 ! [B]
+real(r8), parameter, public :: KNUDSEN_CHLORINITY_CONSTANT = 1.80655_r8 ! based on Knudsen's formula 
 
   ! CONSTANTS
   ! =========
@@ -345,8 +349,7 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 !       Salinity and simply related values
         salinity = DBLE(ssal)
 
-        ! what is this magic number?
-        scl=salinity/1.80655d0
+        scl=salinity/KNUDSEN_CHLORINITY_CONSTANT
 
 !       Ionic strength:
         ! more magic numbers
@@ -356,18 +359,19 @@ SUBROUTINE constants(K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa,  &
 
 !       Sulfate: Morris & Riley (1966)
         ! TODO, find reference
-        St(i) = 0.14d0 * scl/96.062d0
+        St(i) = 0.14d0 * scl/SULFATE_ATOMIC_MASS
 
 !       Fluoride:  Riley (1965)
-        Ft(i) = 0.000067d0 * scl/18.9984d0
+        ! atomic mass fluoride 
+        Ft(i) = 0.000067d0 * scl/FLUORIDE_ATOMIC_MASS
 
 !       Boron:
         IF (trim(opB) == 'l10') THEN
 !          New formulation from Lee et al (2010)
-           Bt(i) = 0.0002414d0 * scl/10.811d0
+           Bt(i) = 0.0002414d0 * scl/BORON_ATOMIC_MASS
         ELSEIF (trim(opB) == 'u74') THEN
 !          Classic formulation from Uppström (1974)
-           Bt(i) = 0.000232d0  * scl/10.811d0
+           Bt(i) = 0.000232d0  * scl/BORON_ATOMIC_MASS
         ELSE
            PRINT *,"optB must be 'l10' or 'u74'"
            STOP
