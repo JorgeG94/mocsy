@@ -3,7 +3,7 @@
 !> Module with derivauto subroutine - compute partial derivatives of carbonate system vars from DIC,Alk,T,S,P,nuts
 MODULE mocsy_derivauto
 
-USE mocsy_singledouble, only : rx, r8, wp
+USE mocsy_singledouble, only : rx, r8, wp, sgle
 USE mocsy_constants, only : constants
 use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_p80, only : p80
@@ -118,12 +118,6 @@ SUBROUTINE derivauto(ph_deriv, pco2_deriv, fco2_deriv, co2_deriv, hco3_deriv, co
   !     OmegaA_deriv = derivatives of Omega for aragonite, i.e., the aragonite saturation state
   !     OmegaC_deriv = derivatives of Omega for calcite, i.e., the   calcite saturation state
   !
-
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
 ! Input variables
   !>     number of records

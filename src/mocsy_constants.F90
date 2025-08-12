@@ -4,7 +4,7 @@
 !! from S,T,P
 module mocsy_constants
 
-  use mocsy_singledouble, only: rx, r8, wp
+  use mocsy_singledouble, only: rx, r8, wp, sgle
   use mocsy_p80, only: p80
   use mocsy_sw_temp, only: compute_sea_water_insitu_temperature
   use mocsy_sw_ptmp, only: compute_sea_water_potential_temperature
@@ -117,11 +117,6 @@ contains
     !     K0, K1, K2, Kb, Kw, Ks, Kf, Kspc, Kspa, K1p, K2p, K3p, Ksi
     !     St, Ft, Bt
 
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 ! Input variables
     !>     number of records
 !f2py intent(hide) number_of_records

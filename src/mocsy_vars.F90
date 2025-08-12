@@ -3,7 +3,7 @@
 !> Module with vars subroutine - compute carbonate system vars from DIC,Alk,T,S,P,nuts
 MODULE mocsy_vars
 
-USE mocsy_singledouble, only : rx, r8, wp
+USE mocsy_singledouble, only : rx, r8, wp, sgle
 USE mocsy_constants, only : constants
 use mocsy_constants_dnad, only: constants_DNAD
 USE mocsy_p80, only : p80
@@ -116,11 +116,6 @@ SUBROUTINE vars(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC, BetaD, rhoSW, p,
   !     p = pressure [decibars]; p = f(depth, latitude) if computed from depth [m] OR p = depth if [db]
   !     tempis  = in-situ temperature [degrees C]
 
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
 ! Input variables
   !>     number of records
@@ -524,11 +519,6 @@ SUBROUTINE vars_pertK(ph, pco2, fco2, co2, hco3, co3, OmegaA, OmegaC,     &
   !     =================
   !     same as routine vars() above except :  BetaD, rhoSW, p, tempis
 
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
 ! Input variables
   !>     number of records

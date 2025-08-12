@@ -10,24 +10,21 @@ USE Dual_Num_Auto_Diff
 IMPLICIT NONE ; PRIVATE
 
 interface compute_sea_water_potential_temperature
+  !     ==================================================================
+  !     Calculates potential temperature [C] from in-situ Temperature [C]
+  !     From UNESCO 1983 report.
+  !     Armin Koehl akoehl@ucsd.edu
+  !     ==================================================================
   module procedure :: compute_sea_water_potential_temperature
   module procedure :: compute_sea_water_potential_temperature_DNAD
 end interface compute_sea_water_potential_temperature
 
 public :: compute_sea_water_potential_temperature
 
-!PUBLIC calculate_sea_water_potential_temperature
-!public calculate_sea_water_potential_temperature_DNAD
 
 CONTAINS
 !> Function to calculate potential temperature [C] from in-situ temperature
 FUNCTION compute_sea_water_potential_temperature  (s,t,p,pr) result(sea_water_temperature)
-
-  !     ==================================================================
-  !     Calculates potential temperature [C] from in-situ Temperature [C]
-  !     From UNESCO 1983 report.
-  !     Armin Koehl akoehl@ucsd.edu
-  !     ==================================================================
 
   !     Input arguments:
   !     -------------------------------------
@@ -85,18 +82,6 @@ FUNCTION compute_sea_water_potential_temperature_DNAD  (s,t,p,pr) result(sea_wat
   !     It is similar to subroutine 'sw_ptmp' above except that it also computes
   !     partial derivative of potential temperature
   !     with respect to insitu temperature and salinity.
-  !     ==================================================================
-  !     Calculates potential temperature [C] from in-situ Temperature [C]
-  !     From UNESCO 1983 report.
-  !     Armin Koehl akoehl@ucsd.edu
-  !     ==================================================================
-
-  !     Input arguments:
-  !     -------------------------------------
-  !     s  = salinity            [psu      (PSS-78) ]
-  !     t  = temperature         [degree C (IPTS-68)]
-  !     p  = pressure            [db]
-  !     pr = reference pressure  [db]
 
 ! Input arguments
   !> salinity [psu (PSS-78)]

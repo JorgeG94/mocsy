@@ -3,7 +3,7 @@
 !>    Module with p2fCO2 subroutine - compute fCO2 from pCO2, in situ T, atm pressure, hydrostatic pressure
 MODULE mocsy_p2fCO2
 
-USE mocsy_singledouble, only : rx, r8, wp
+USE mocsy_singledouble, only : rx, r8, wp, sgle
 
 IMPLICIT NONE ; PRIVATE
 
@@ -15,11 +15,7 @@ SUBROUTINE p2fCO2(pCO2, temp, Patm, p, N, fCO2)
   !    Purpose:
   !    Compute fCO2 from arrays of pCO2, in situ temp, atm pressure, & hydrostatic pressure
 
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
+
 
   !> number of records
 !f2py intent(hide) n

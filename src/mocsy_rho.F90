@@ -3,7 +3,7 @@
 !> Module with rho function - computes in situ density from S, T, P
 MODULE mocsy_rho
 
-USE mocsy_singledouble, only : r8, rx, wp
+USE mocsy_singledouble, only : r8, rx, wp, sgle
 USE Dual_Num_Auto_Diff
 
 IMPLICIT NONE ; PRIVATE
@@ -13,11 +13,6 @@ interface rho
   module procedure :: rho_single
   module procedure :: rho_DNAD
 end interface rho
-#if USE_PRECISION == 2
-#   define SGLE(x)    (x)
-#else
-#   define SGLE(x)    REAL(x)
-#endif
 
 
 CONTAINS
